@@ -60,4 +60,4 @@ Tell Claude which Kubernetes concepts you want to practice, and scenarios will b
 
 ## Project Management Notes
 - Remember to take a look at TASKS.md to get a good grasp of what needs to be done and the progress of the project.
-- Remember to change the status of task in TASKS.md. Only if I'm satisfied with a task, can you mark it as done.
+- Remember to change the status of task in TASKS.md.

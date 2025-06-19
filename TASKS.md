@@ -18,6 +18,11 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Side-by-side workflow demonstration using Deployments
   - Shows PV naming patterns and creation order differences
   - Explains when to use each provisioning approach
+- [x] **Reclaim Policy Scenario**: `03-reclaim-policy.md`
+  - Compares Retain vs Delete reclaim policies with practical demonstration
+  - Shows PV behavior when PVCs are deleted (Released vs automatic deletion)
+  - Includes data persistence testing and manual cleanup procedures
+  - Explains production vs development use cases for each policy
 
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
@@ -26,11 +31,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 ## Pending Tasks 📋
 
 ### Storage/StorageClass Scenarios
-
-- [ ] **Reclaim Policy Scenario**: `03-reclaim-policy.md`
-  - Compare Retain vs Delete reclaim policies
-  - Delete PVCs and observe PV behavior
-  - Manual PV cleanup procedures
 
 - [ ] **Volume Binding Mode Scenario**: `04-volume-binding-mode.md`
   - Compare Immediate vs WaitForFirstConsumer
