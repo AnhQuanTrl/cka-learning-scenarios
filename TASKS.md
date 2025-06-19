@@ -9,8 +9,15 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [x] **Directory Structure**: Created `Storage/StorageClass/` folder structure
 - [x] **Basic StorageClass Creation**: `01-basic-storageclass-creation.md`
   - Covers StorageClass creation, default StorageClass configuration
+  - Focuses on reclaim policies and volume binding modes
   - Includes StatefulSet and Deployment consuming different StorageClasses
   - Comprehensive verification commands and expected results
+  - Note: Volume expansion removed (not supported by rancher.io/local-path provisioner)
+- [x] **Static vs Dynamic Provisioning**: `02-dynamic-provisioning.md`
+  - Compares manual PV creation (static) vs StorageClass automation (dynamic)
+  - Side-by-side workflow demonstration using Deployments
+  - Shows PV naming patterns and creation order differences
+  - Explains when to use each provisioning approach
 
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
@@ -19,28 +26,27 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 ## Pending Tasks 📋
 
 ### Storage/StorageClass Scenarios
-- [ ] **Dynamic Provisioning Scenario**: `02-dynamic-provisioning.md`
-  - Focus on automatic PV creation from StorageClass
-  - Multiple PVCs with different storage requests
-  - Verification of dynamic volume creation
 
-- [ ] **Volume Expansion Scenario**: `03-volume-expansion.md`
-  - StorageClass with volume expansion enabled
-  - Demonstrate expanding PVC size dynamically
-  - Verify application can access expanded storage
-
-- [ ] **Reclaim Policy Scenario**: `04-reclaim-policy.md`
+- [ ] **Reclaim Policy Scenario**: `03-reclaim-policy.md`
   - Compare Retain vs Delete reclaim policies
   - Delete PVCs and observe PV behavior
   - Manual PV cleanup procedures
 
-- [ ] **Volume Binding Mode Scenario**: `05-volume-binding-mode.md`
+- [ ] **Volume Binding Mode Scenario**: `04-volume-binding-mode.md`
   - Compare Immediate vs WaitForFirstConsumer
   - Multi-node scenarios showing topology awareness
   - Understanding when PV creation occurs
 
+- [ ] **NFS CSI Driver vs Subdir Provisioner**: `05-nfs-storage-comparison.md`
+  - Set up and configure NFS CSI Driver StorageClass
+  - Set up and configure NFS Subdir External Provisioner StorageClass
+  - Compare volume isolation, security, and features between both approaches
+  - Deploy applications using both provisioners to demonstrate differences
+  - Environment: k3s bare metal with homelab NFS server
+
 - [ ] **Digital Ocean CSI Scenario**: `06-digital-ocean-csi.md`
   - Cloud-specific StorageClass configuration
+  - Volume expansion: StorageClass with expansion enabled, demonstrate expanding PVC size dynamically, verify application can access expanded storage
   - CSI volume snapshots and restore
   - Cost-effective cluster setup and teardown instructions
 
