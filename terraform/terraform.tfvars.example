@@ -1,0 +1,35 @@
+# Example Terraform variables for CKA Storage CSI learning scenario
+# Copy this file to terraform.tfvars and customize for your environment
+
+# Cluster configuration
+cluster_name = "cka-storage-test"
+region       = "nyc1"  # Choose closest region: nyc1, nyc3, ams3, fra1, lon1, sgp1, sfo3, tor1, blr1, syd1
+
+# Node pool configuration (cost-optimized for learning)
+node_pool_name = "storage-workers"
+node_size      = "s-2vcpu-2gb"  # $12/month per node
+node_count     = 1              # Minimum for cost optimization
+
+# Maintenance settings (optional)
+enable_auto_upgrade  = false  # Disabled for learning stability
+enable_surge_upgrade = false  # Disabled for cost optimization
+
+maintenance_policy = {
+  start_time = "02:00"  # 2 AM UTC
+  day        = "sunday" # Sunday maintenance window
+}
+
+# Cost considerations:
+# - Control plane: FREE
+# - 1 x s-2vcpu-2gb node: $12/month = $0.0167/hour
+# - 2-hour learning session: ~$0.33
+# - Per-second billing with 60-second minimum
+
+# Quick setup commands:
+# 1. cp terraform.tfvars.example terraform.tfvars
+# 2. export DIGITALOCEAN_TOKEN="your_token_here"
+# 3. terraform init
+# 4. terraform plan
+# 5. terraform apply
+# 6. Run scenario: Storage/StorageClass/06-digital-ocean-csi.md
+# 7. terraform destroy (to stop billing)

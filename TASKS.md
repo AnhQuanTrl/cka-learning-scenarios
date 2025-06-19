@@ -28,6 +28,18 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Demonstrates timing differences in PV creation and binding
   - Shows topology-aware volume placement concepts
   - Includes practical applications consuming different binding modes
+- [x] **NFS Storage Comparison Scenario**: `05-nfs-storage-comparison.md`
+  - Compares NFS CSI Driver vs NFS Subdir External Provisioner
+  - Demonstrates volume isolation, security, and feature differences
+  - Shows deployment of both provisioners with practical applications
+  - Covers advanced CSI features like volume expansion and snapshots
+  - Environment: k3s bare metal with homelab NFS server
+- [x] **Digital Ocean CSI Scenario**: `06-digital-ocean-csi.md`
+  - Cloud-specific StorageClass configuration and CSI features
+  - Volume expansion: StorageClass with expansion enabled, demonstrate expanding PVC size dynamically
+  - CSI volume snapshots: Create snapshots and restore to new volumes
+  - Cost-effective cluster setup and teardown instructions for learning
+  - Advanced CSI monitoring and observability features
 
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
@@ -37,19 +49,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 
 ### Storage/StorageClass Scenarios
 
-
-- [ ] **NFS CSI Driver vs Subdir Provisioner**: `05-nfs-storage-comparison.md`
-  - Set up and configure NFS CSI Driver StorageClass
-  - Set up and configure NFS Subdir External Provisioner StorageClass
-  - Compare volume isolation, security, and features between both approaches
-  - Deploy applications using both provisioners to demonstrate differences
-  - Environment: k3s bare metal with homelab NFS server
-
-- [ ] **Digital Ocean CSI Scenario**: `06-digital-ocean-csi.md`
-  - Cloud-specific StorageClass configuration
-  - Volume expansion: StorageClass with expansion enabled, demonstrate expanding PVC size dynamically, verify application can access expanded storage
-  - CSI volume snapshots and restore
-  - Cost-effective cluster setup and teardown instructions
+**All Storage/StorageClass scenarios completed! ✅**
 
 ## Future Scenario Categories (Not Started)
 
@@ -84,4 +84,10 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - **Time Management**: Include realistic time limits matching exam conditions
 
 ## Current Priority
-Focus on completing Storage/StorageClass scenarios before moving to other domains, as this provides a solid foundation for understanding Kubernetes storage concepts.
+**Storage/StorageClass scenarios completed!** ✅ 
+
+Ready to move to next CKA domain:
+- **Workloads & Scheduling (15%)** - Pod scheduling, resource limits, DaemonSets, StatefulSets, Jobs
+- **Services & Networking (20%)** - Service types, Ingress, Network policies, DNS
+- **Cluster Architecture (25%)** - RBAC, cluster upgrades, etcd backup, node management  
+- **Troubleshooting (30%)** - Pod/node troubleshooting, debugging, log analysis
