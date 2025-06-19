@@ -23,6 +23,11 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Shows PV behavior when PVCs are deleted (Released vs automatic deletion)
   - Includes data persistence testing and manual cleanup procedures
   - Explains production vs development use cases for each policy
+- [x] **Volume Binding Mode Scenario**: `04-volume-binding-mode.md`
+  - Compares Immediate vs WaitForFirstConsumer binding modes
+  - Demonstrates timing differences in PV creation and binding
+  - Shows topology-aware volume placement concepts
+  - Includes practical applications consuming different binding modes
 
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
@@ -32,10 +37,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 
 ### Storage/StorageClass Scenarios
 
-- [ ] **Volume Binding Mode Scenario**: `04-volume-binding-mode.md`
-  - Compare Immediate vs WaitForFirstConsumer
-  - Multi-node scenarios showing topology awareness
-  - Understanding when PV creation occurs
 
 - [ ] **NFS CSI Driver vs Subdir Provisioner**: `05-nfs-storage-comparison.md`
   - Set up and configure NFS CSI Driver StorageClass

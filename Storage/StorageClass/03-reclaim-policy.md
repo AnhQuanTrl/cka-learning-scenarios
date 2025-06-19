@@ -134,10 +134,10 @@ kubectl get pv -o wide
 
 # For retained PVs, you can either:
 # Option 1: Delete manually
-# kubectl delete pv <retained-pv-name>
+kubectl delete pv <retained-pv-name>
 
 # Option 2: Clear claim reference to make it Available again
-# kubectl patch pv <retained-pv-name> --type json -p '[{"op": "remove", "path": "/spec/claimRef"}]'
+kubectl patch pv <retained-pv-name> --type json -p '[{"op": "remove", "path": "/spec/claimRef"}]'
 ```
 
 ## Expected Results
