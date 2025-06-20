@@ -129,6 +129,15 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Combined probe strategies and best practices
   - Environment: k3s bare metal
 
+### Configuration/ResourceManagement
+- [x] **Requests and Limits**: `01-requests-and-limits.md`
+  - CPU and memory resource specification (units, syntax)
+  - Resource requests for scheduling and guarantees
+  - Resource limits for enforcement and protection
+  - Practical applications with different resource patterns
+  - Node resource allocation and capacity planning
+  - Environment: k3s bare metal
+
 ## Pending Tasks 📋
 
 ### Configuration Scenarios (Next Priority)
@@ -139,13 +148,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 **All Configuration/Probes scenarios completed!** ✅
 
 #### Configuration/ResourceManagement (3 scenarios)
-- [ ] **Requests and Limits**: `01-requests-and-limits.md`
-  - CPU and memory resource specification (units, syntax)
-  - Resource requests for scheduling and guarantees
-  - Resource limits for enforcement and protection
-  - Practical applications with different resource patterns
-  - Node resource allocation and capacity planning
-  - Environment: k3s bare metal
 - [ ] **Quality of Service Classes**: `02-quality-of-service-classes.md`
   - Guaranteed QoS (requests == limits for all resources)
   - Burstable QoS (requests < limits or partial resource specification)
