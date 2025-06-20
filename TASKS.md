@@ -101,6 +101,14 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
  - Testing with private container images
  - Environment: k3s bare metal with access to a private Docker registry
 
+### Configuration/Probes
+- [x] **Liveness Probes**: `01-liveness-probes.md`
+  - HTTP, TCP, and exec probe types for liveness checking
+  - Detecting and recovering from application deadlocks
+  - Container restart behavior and restart policies
+  - Practical applications with different liveness scenarios
+  - Environment: k3s bare metal
+
 ## Pending Tasks 📋
 
 ### Configuration Scenarios (Next Priority)
@@ -108,12 +116,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 #### Configuration/Secrets (2 scenarios)
 
 #### Configuration/Probes (4 scenarios)
-- [ ] **Liveness Probes**: `01-liveness-probes.md`
-  - HTTP, TCP, and exec probe types for liveness checking
-  - Detecting and recovering from application deadlocks
-  - Container restart behavior and restart policies
-  - Practical applications with different liveness scenarios
-  - Environment: k3s bare metal
 - [ ] **Readiness Probes**: `02-readiness-probes.md`
   - HTTP, TCP, and exec probe types for readiness checking
   - Service endpoint management and traffic routing
