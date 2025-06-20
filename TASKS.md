@@ -185,8 +185,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Kubeconfig troubleshooting and validation
   - Environment: k3s and minikube
 
-## Pending Tasks 📋
-
 ### Security/Authentication
 - [x] **Directory Structure**: Create `Security/Authentication/` folder structure
 - [x] **Service Account Authentication**: `01-service-account-authentication.md`
@@ -196,6 +194,17 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Service Account token lifecycle management
   - Cross-namespace service account authentication
   - Environment: k3s bare metal
+- [x] **Certificate-based Authentication**: `02-certificate-based-authentication.md`
+  - X.509 client certificate authentication
+  - Certificate Signing Request (CSR) workflow
+  - User certificate creation and management
+  - Certificate-based kubeconfig configuration
+  - Certificate rotation and renewal processes
+  - Environment: k3s bare metal
+
+## Pending Tasks 📋
+
+### Security/Authentication
 - [ ] **Certificate-based Authentication**: `02-certificate-based-authentication.md`
   - X.509 client certificate authentication
   - Certificate Signing Request (CSR) workflow
