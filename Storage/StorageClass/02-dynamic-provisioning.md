@@ -43,7 +43,15 @@ Create a PVC that binds to the manually created PV:
 - **Access Mode**: `ReadWriteOnce`
 - **Storage Request**: `2Gi`
 
-### Task 4: Deploy application using static storage (3 minutes)
+### Task 4: Demonstrate Failed PVC Binding due to Capacity Mismatch (3 minutes)
+Create a second PVC that attempts to bind to the same static PV but fails due to an insufficient capacity request.
+- **Name**: `failed-pvc`
+- **StorageClass**: `static-storage`
+- **Access Mode**: `ReadWriteOnce`
+- **Storage Request**: `3Gi`
+Observe that this PVC will remain in a **Pending** state because its request exceeds the available PV's capacity.
+
+### Task 5: Deploy application using static storage (3 minutes)
 Create a Deployment with these exact specifications:
 - **Name**: `static-app`
 - **Image**: `nginx:1.20`
@@ -53,21 +61,21 @@ Create a Deployment with these exact specifications:
 
 ## Part 2: Dynamic Provisioning (Automatic PV Creation)
 
-### Task 5: Create StorageClass for dynamic provisioning (2 minutes)
+### Task 6: Create StorageClass for dynamic provisioning (2 minutes)
 Create a StorageClass with these exact specifications:
 - **Name**: `dynamic-storage`
 - **Provisioner**: `rancher.io/local-path`
 - **Reclaim Policy**: `Delete`
 - **Volume Binding Mode**: `Immediate`
 
-### Task 6: Create PVC for dynamic provisioning (3 minutes)
+### Task 7: Create PVC for dynamic provisioning (3 minutes)
 Create a PVC that triggers automatic PV creation:
 - **Name**: `dynamic-app-pvc`
 - **StorageClass**: `dynamic-storage`
 - **Access Mode**: `ReadWriteOnce`
 - **Storage Request**: `2Gi`
 
-### Task 7: Deploy application using dynamic storage (3 minutes)
+### Task 8: Deploy application using dynamic storage (3 minutes)
 Create a Deployment with these exact specifications:
 - **Name**: `dynamic-app`
 - **Image**: `nginx:1.20`
@@ -75,7 +83,7 @@ Create a Deployment with these exact specifications:
 - **PVC**: `dynamic-app-pvc`
 - **Mount Path**: `/usr/share/nginx/html`
 
-### Task 8: Compare the two approaches (2 minutes)
+### Task 9: Compare the two approaches (2 minutes)
 - Observe the differences in PV creation workflow
 - Check PV naming patterns and properties
 - Verify both applications are running successfully
@@ -103,9 +111,24 @@ kubectl describe pv static-pv | grep -E "StorageClass:|Source:"
 kubectl get pvc static-app-pvc
 kubectl describe pvc static-app-pvc | grep -E "Volume:|StorageClass:|Capacity:"
 
+# Should show the failed PVC stuck in a Pending state
+kubectl get pvc static-app-pvc-fail
+# Describe the PVC to see events indicating why it's not binding
+kubectl describe pvc static-app-pvc-fail
+
 # Should show application running with static storage
 kubectl get deployment static-app
 kubectl get pods -l app=static-app
+```
+
+### Verify Failed PVC Binding:
+```bash
+# Check the status of the failed PVC. It should be 'Pending'.
+kubectl get pvc failed-pvc
+
+# Describe the PVC to see the event causing the failure.
+# The events section should show a "FailedBinding" event with a message indicating the capacity mismatch (e.g., "volume capacity "2Gi" is less than requested capacity "3Gi"").
+kubectl describe pvc failed-pvc
 ```
 
 ### Verify Dynamic Provisioning Setup:
@@ -158,7 +181,8 @@ kubectl exec -it deployment/dynamic-app -- cat /usr/share/nginx/html/dynamic.txt
 2. PV `static-pv` exists with custom name, `/tmp/static-storage` path, and `static-storage` StorageClass
 3. PVC `static-app-pvc` is bound to `static-pv` through StorageClass matching
 4. Deployment `static-app` is running with static storage mounted
-5. Manual workflow: StorageClass → Manual PV creation → PVC binds to existing PV
+5. PVC `failed-pvc` remains in a `Pending` state because its `3Gi` request exceeds the `2Gi` capacity of `static-pv`.
+6. Manual workflow: StorageClass → Manual PV creation → PVC binds to existing PV if specs match
 
 ### Dynamic Provisioning Results:
 1. StorageClass `dynamic-storage` exists with `rancher.io/local-path` provisioner
@@ -175,9 +199,11 @@ kubectl exec -it deployment/dynamic-app -- cat /usr/share/nginx/html/dynamic.txt
 
 ## Key Learning Points
 - **Static Provisioning**: Uses `kubernetes.io/no-provisioner` StorageClass with manually created PVs
+- **Binding Rules**: For a static PV to bind to a PVC, the `storageClassName` must match, the `accessModes` must be compatible, and the PV's `capacity` must be greater than or equal to the PVC's request.
 - **Dynamic Provisioning**: Uses provisioner plugins in StorageClass to automatically create PVs
 - **StorageClass Role**: Static uses StorageClass for matching only, Dynamic uses StorageClass for provisioning
 - **Workflow**: Static = no-provisioner StorageClass → Manual PV → PVC binding, Dynamic = provisioner StorageClass → PVC → Auto-PV creation
+- **Matching Rules**: For static provisioning, the PVC will only bind if its `storageClassName`, `accessModes`, and `capacity` request are satisfied by an available PV.
 - **Volume Control**: Static gives precise control over PV creation and placement, Dynamic provides automation and scalability
 
 ## When to Use Each Approach
