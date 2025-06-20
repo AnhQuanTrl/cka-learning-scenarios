@@ -35,11 +35,24 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Covers advanced CSI features like volume expansion and snapshots
   - Environment: k3s bare metal with homelab NFS server
 - [x] **Digital Ocean CSI Scenario**: `06-digital-ocean-csi.md`
-  - Cloud-specific StorageClass configuration and CSI features
+  - Cloud-specific StorageClass configuration and CSI basics
   - Volume expansion: StorageClass with expansion enabled, demonstrate expanding PVC size dynamically
-  - CSI volume snapshots: Create snapshots and restore to new volumes
-  - Cost-effective cluster setup and teardown instructions for learning
-  - Advanced CSI monitoring and observability features
+  - Cost-effective DOKS cluster setup and teardown instructions for learning
+  - CSI monitoring and observability features
+
+### Storage/VolumeSnapshots
+- [x] **Volume Snapshots Scenario**: `01-volume-snapshots.md`
+  - VolumeSnapshot, VolumeSnapshotClass, and VolumeSnapshotContent concepts
+  - Point-in-time snapshot creation and management
+  - Snapshot-to-PVC restoration workflows with PostgreSQL application
+  - Advanced snapshot lifecycle and troubleshooting
+  - Environment: DigitalOcean Kubernetes (DOKS)
+- [x] **Volume Cloning Scenario**: `02-volume-cloning.md`
+  - CSI volume cloning using PVC dataSource
+  - Direct PVC-to-PVC cloning without intermediate snapshots
+  - Clone vs snapshot performance and use case comparison
+  - Data independence and isolation testing with MySQL application
+  - Environment: DigitalOcean Kubernetes (DOKS)
 
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
@@ -84,7 +97,10 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - **Time Management**: Include realistic time limits matching exam conditions
 
 ## Current Priority
-**Storage/StorageClass scenarios completed!** ✅ 
+**Storage domain completed!** ✅ 
+
+**Storage/StorageClass scenarios**: 6 scenarios covering basic concepts through advanced CSI features
+**Storage/VolumeSnapshots scenarios**: 2 scenarios covering snapshot and cloning functionality
 
 Ready to move to next CKA domain:
 - **Workloads & Scheduling (15%)** - Pod scheduling, resource limits, DaemonSets, StatefulSets, Jobs
