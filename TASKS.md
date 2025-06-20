@@ -159,6 +159,12 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Multiple kubeconfig file merging and precedence
   - kubectl config commands for configuration management
   - Environment: k3s bare metal
+- [x] **Multiple Cluster Contexts**: `02-multiple-cluster-contexts.md`
+  - Managing development, staging, and production cluster access
+  - Context switching and namespace configuration
+  - User and cluster credential management
+  - Kubeconfig troubleshooting and validation
+  - Environment: k3s and minikube
 
 ## Pending Tasks 📋
 
@@ -170,15 +176,10 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 **All Configuration/Probes scenarios completed!** ✅
 
 #### Configuration/ResourceManagement (3 scenarios)
-**All Configuration/ResourceManagement scenarios completed!** ✅
+**All Configuration/_ResourceManagement scenarios completed!_** ✅
 
 #### Configuration/ClusterAccess (2 scenario)
-- [ ] **Multiple Cluster Contexts**: `02-multiple-cluster-contexts.md`
-  - Managing development, staging, and production cluster access
-  - Context switching and namespace configuration
-  - User and cluster credential management
-  - Kubeconfig troubleshooting and validation
-  - Environment: k3s bare metal + DigitalOcean for multi-cluster scenarios
+**All Configuration/ClusterAccess scenarios completed!** ✅
 
 ### Storage/StorageClass Scenarios
 
