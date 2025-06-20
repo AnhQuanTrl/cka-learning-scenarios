@@ -211,7 +211,9 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Resource and verb permission mapping
   - Namespace-level vs cluster-level authorization
   - Environment: k3s bare metal
-- [ ] **RBAC Advanced Patterns**: `02-rbac-advanced-patterns.md`
+
+### Security/Authorization
+- [x] **RBAC Advanced Patterns**: `02-rbac-advanced-patterns.md`
   - Aggregated ClusterRoles and permission inheritance
   - Built-in system roles and their usage
   - Multi-tenant RBAC design patterns
