@@ -108,6 +108,12 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Container restart behavior and restart policies
   - Practical applications with different liveness scenarios
   - Environment: k3s bare metal
+- [x] **Readiness Probes**: `02-readiness-probes.md`
+  - HTTP, TCP, and exec probe types for readiness checking
+  - Service endpoint management and traffic routing
+  - Slow-starting applications and initialization delays
+  - Load balancer integration and service discovery
+  - Environment: k3s bare metal
 
 ## Pending Tasks 📋
 
@@ -116,12 +122,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 #### Configuration/Secrets (2 scenarios)
 
 #### Configuration/Probes (4 scenarios)
-- [ ] **Readiness Probes**: `02-readiness-probes.md`
-  - HTTP, TCP, and exec probe types for readiness checking
-  - Service endpoint management and traffic routing
-  - Slow-starting applications and initialization delays
-  - Load balancer integration and service discovery
-  - Environment: k3s bare metal
 - [ ] **Startup Probes**: `03-startup-probes.md`
   - Managing slow-starting containers (databases, large applications)
   - Startup probe interaction with liveness/readiness probes
