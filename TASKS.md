@@ -202,20 +202,9 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Certificate rotation and renewal processes
   - Environment: k3s bare metal
 
-## Pending Tasks 📋
-
-### Security/Authentication
-- [ ] **Certificate-based Authentication**: `02-certificate-based-authentication.md`
-  - X.509 client certificate authentication
-  - Certificate Signing Request (CSR) workflow
-  - User certificate creation and management
-  - Certificate-based kubeconfig configuration
-  - Certificate rotation and renewal processes
-  - Environment: k3s bare metal
-
 ### Security/Authorization
-- [ ] **Directory Structure**: Create `Security/Authorization/` folder structure
-- [ ] **RBAC Fundamentals**: `01-rbac-fundamentals.md`
+- [x] **Directory Structure**: Create `Security/Authorization/` folder structure
+- [x] **RBAC Fundamentals**: `01-rbac-fundamentals.md`
   - Role vs ClusterRole creation and scope
   - RoleBinding vs ClusterRoleBinding configuration
   - Subject types (User, Group, ServiceAccount)
