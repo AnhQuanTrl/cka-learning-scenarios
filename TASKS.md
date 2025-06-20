@@ -152,6 +152,14 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Resource monitoring and capacity planning
   - Environment: k3s bare metal
 
+### Configuration/ClusterAccess
+- [x] **Kubeconfig Management**: `01-kubeconfig-management.md`
+  - Kubeconfig file structure (clusters, users, contexts)
+  - Authentication methods (certificates, tokens, username/password)
+  - Multiple kubeconfig file merging and precedence
+  - kubectl config commands for configuration management
+  - Environment: k3s bare metal
+
 ## Pending Tasks 📋
 
 ### Configuration Scenarios (Next Priority)
@@ -164,13 +172,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 #### Configuration/ResourceManagement (3 scenarios)
 **All Configuration/ResourceManagement scenarios completed!** ✅
 
-#### Configuration/ClusterAccess (2 scenarios)
-- [ ] **Kubeconfig Management**: `01-kubeconfig-management.md`
-  - Kubeconfig file structure (clusters, users, contexts)
-  - Authentication methods (certificates, tokens, username/password)
-  - Multiple kubeconfig file merging and precedence
-  - kubectl config commands for configuration management
-  - Environment: k3s bare metal
+#### Configuration/ClusterAccess (2 scenario)
 - [ ] **Multiple Cluster Contexts**: `02-multiple-cluster-contexts.md`
   - Managing development, staging, and production cluster access
   - Context switching and namespace configuration
