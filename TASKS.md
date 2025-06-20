@@ -144,6 +144,13 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Pod eviction order during resource pressure
   - QoS impact on scheduling and node resource management
   - Environment: k3s bare metal
+- [x] **Resource Quotas and Limits**: `03-resource-quotas-and-limits.md`
+  - Namespace-level ResourceQuota objects
+  - LimitRange objects for default and maximum resource constraints
+  - Resource quota enforcement and admission control
+  - Multi-tenant cluster resource management
+  - Resource monitoring and capacity planning
+  - Environment: k3s bare metal
 
 ## Pending Tasks 📋
 
@@ -155,13 +162,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 **All Configuration/Probes scenarios completed!** ✅
 
 #### Configuration/ResourceManagement (3 scenarios)
-- [ ] **Resource Quotas and Limits**: `03-resource-quotas-and-limits.md`
-  - Namespace-level ResourceQuota objects
-  - LimitRange objects for default and maximum resource constraints
-  - Resource quota enforcement and admission control
-  - Multi-tenant cluster resource management
-  - Resource monitoring and capacity planning
-  - Environment: k3s bare metal
+**All Configuration/ResourceManagement scenarios completed!** ✅
 
 #### Configuration/ClusterAccess (2 scenarios)
 - [ ] **Kubeconfig Management**: `01-kubeconfig-management.md`
