@@ -137,6 +137,13 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Practical applications with different resource patterns
   - Node resource allocation and capacity planning
   - Environment: k3s bare metal
+- [x] **Quality of Service Classes**: `02-quality-of-service-classes.md`
+  - Guaranteed QoS (requests == limits for all resources)
+  - Burstable QoS (requests < limits or partial resource specification)
+  - BestEffort QoS (no requests or limits specified)
+  - Pod eviction order during resource pressure
+  - QoS impact on scheduling and node resource management
+  - Environment: k3s bare metal
 
 ## Pending Tasks 📋
 
@@ -148,13 +155,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 **All Configuration/Probes scenarios completed!** ✅
 
 #### Configuration/ResourceManagement (3 scenarios)
-- [ ] **Quality of Service Classes**: `02-quality-of-service-classes.md`
-  - Guaranteed QoS (requests == limits for all resources)
-  - Burstable QoS (requests < limits or partial resource specification)
-  - BestEffort QoS (no requests or limits specified)
-  - Pod eviction order during resource pressure
-  - QoS impact on scheduling and node resource management
-  - Environment: k3s bare metal
 - [ ] **Resource Quotas and Limits**: `03-resource-quotas-and-limits.md`
   - Namespace-level ResourceQuota objects
   - LimitRange objects for default and maximum resource constraints
