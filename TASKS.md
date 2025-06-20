@@ -114,6 +114,12 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Slow-starting applications and initialization delays
   - Load balancer integration and service discovery
   - Environment: k3s bare metal
+- [x] **Startup Probes**: `03-startup-probes.md`
+  - Managing slow-starting containers (databases, large applications)
+  - Startup probe interaction with liveness/readiness probes
+  - Legacy application modernization patterns
+  - Container initialization sequence management
+  - Environment: k3s bare metal
 
 ## Pending Tasks 📋
 
@@ -122,12 +128,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 #### Configuration/Secrets (2 scenarios)
 
 #### Configuration/Probes (4 scenarios)
-- [ ] **Startup Probes**: `03-startup-probes.md`
-  - Managing slow-starting containers (databases, large applications)
-  - Startup probe interaction with liveness/readiness probes
-  - Legacy application modernization patterns
-  - Container initialization sequence management
-  - Environment: k3s bare metal
 - [ ] **Probe Types and Configuration**: `04-probe-types-and-configuration.md`
   - HTTP probes with custom headers and paths
   - TCP socket probes for network service checking
