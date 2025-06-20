@@ -3,6 +3,25 @@
 ## Project Status Overview
 This document tracks the progress of creating CKA exam preparation scenarios based on Kubernetes concepts.
 
+## CKA Exam 2025 Updates 🚀
+**Effective Date**: February 18, 2025 (based on exam date, not purchase date)
+**Kubernetes Version**: v1.32
+
+### Domain Percentages (Updated 2025):
+- **Cluster Architecture, Installation & Configuration**: 25%
+- **Services & Networking**: 20%
+- **Workloads & Scheduling**: 15%
+- **Storage**: 10%
+- **Troubleshooting**: 30%
+
+### Key Changes:
+- **REMOVED**: "Provision underlying infrastructure to deploy a Kubernetes cluster" (reflects managed platform reality)
+- **ADDED**: Gateway API for Ingress traffic management
+- **ADDED**: Helm and Kustomize for deployment management
+- **ADDED**: Extension interfaces (CNI, CSI, CRI)
+- **ENHANCED**: Dynamic volume provisioning focus in Storage domain
+- **ENHANCED**: Network services and connectivity in Troubleshooting domain
+
 ## Completed Tasks ✅
 
 ### Storage/StorageClass
@@ -168,24 +187,23 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 
 ## Pending Tasks 📋
 
-### Configuration Scenarios (Next Priority)
-
-#### Configuration/Secrets (2 scenarios)
-
-#### Configuration/Probes (4 scenarios)
-**All Configuration/Probes scenarios completed!** ✅
-
-#### Configuration/ResourceManagement (3 scenarios)
-**All Configuration/_ResourceManagement scenarios completed!_** ✅
-
-#### Configuration/ClusterAccess (2 scenario)
-**All Configuration/ClusterAccess scenarios completed!** ✅
-
-### Storage/StorageClass Scenarios
-
-**All Storage/StorageClass scenarios completed! ✅**
+Empty
 
 ## Future Scenario Categories (Not Started)
+
+### Cluster Architecture, Installation & Configuration (25%)
+- [ ] RBAC and security contexts
+- [ ] Cluster upgrades
+- [ ] Node management
+- [ ] Helm and Kustomize for deployment management
+- [ ] Extension interfaces (CNI, CSI, CRI)
+
+### Services & Networking (20%)
+- [ ] Service types and endpoints
+- [ ] Ingress controllers and rules
+- [ ] Gateway API for Ingress traffic management (NEW in 2025)
+- [ ] Network policies
+- [ ] DNS and service discovery
 
 ### Workloads & Scheduling (15%)
 - [ ] Pod scheduling and affinity rules
@@ -193,22 +211,17 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [ ] DaemonSets and StatefulSets
 - [ ] Jobs and CronJobs
 
-### Services & Networking (20%)
-- [ ] Service types and endpoints
-- [ ] Ingress controllers and rules
-- [ ] Network policies
-- [ ] DNS and service discovery
-
-### Cluster Architecture (25%)
-- [ ] RBAC and security contexts
-- [ ] Cluster upgrades
-- [ ] etcd backup and restore
-- [ ] Node management
+### Storage (10%)
+- [x] StorageClass scenarios (6 scenarios completed)
+- [x] VolumeSnapshots scenarios (2 scenarios completed)
+- [ ] Dynamic volume provisioning (enhanced focus in 2025)
+- [ ] Volume types, access modes, and reclaim policies
 
 ### Troubleshooting (30%)
 - [ ] Pod and node troubleshooting
 - [ ] Application debugging
 - [ ] Cluster component issues
+- [ ] Network services and connectivity (enhanced focus in 2025)
 - [ ] Log analysis and monitoring
 
 ## Notes for Scenario Creation
