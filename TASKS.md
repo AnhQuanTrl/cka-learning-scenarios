@@ -81,31 +81,33 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
 - [x] **Scenario Quality Standards**: Defined clear task instructions, practical applications, and verification requirements
 
-## Pending Tasks 📋
-
-### Configuration Scenarios (Next Priority)
-
-#### Configuration/Secrets (3 scenarios)
-- [ ] **Secret Types and Creation**: `01-secret-types-and-creation.md`
+### Configuration/Secrets
+- [x] **Secret Types and Creation**: `01-secret-types-and-creation.md`
   - Opaque secrets (generic user-defined data)
   - ServiceAccount token secrets
   - Creation methods (imperative, declarative, from files)
   - Base64 encoding/decoding and data validation
   - Environment: k3s bare metal
-- [ ] **Secret Consumption and Security**: `02-secret-consumption-and-security.md`
+- [x] **Secret Consumption and Security**: `02-secret-consumption-and-security.md`
   - Environment variable injection vs volume mounting
   - Security best practices and RBAC integration
   - Secret data exposure risks and mitigation
   - Practical application using secrets securely
   - Environment: k3s bare metal
-- [ ] **Docker Registry Secrets**: `03-docker-registry-secrets.md`
-  - Creating docker-registry type secrets
-  - ImagePullSecrets configuration in Pods and ServiceAccounts
-  - Private registry authentication patterns
-  - Testing with private container images
-  - Environment: k3s bare metal with private registry simulation
+- [x] **Docker Registry Secrets**: `03-docker-registry-secrets.md`
+ - Creating docker-registry type secrets
+ - ImagePullSecrets configuration in Pods and ServiceAccounts
+ - Private registry authentication patterns
+ - Testing with private container images
+ - Environment: k3s bare metal with access to a private Docker registry
 
-#### Configuration/Probes (4 scenarios) - HIGH PRIORITY
+## Pending Tasks 📋
+
+### Configuration Scenarios (Next Priority)
+
+#### Configuration/Secrets (2 scenarios)
+
+#### Configuration/Probes (4 scenarios)
 - [ ] **Liveness Probes**: `01-liveness-probes.md`
   - HTTP, TCP, and exec probe types for liveness checking
   - Detecting and recovering from application deadlocks
