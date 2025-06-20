@@ -188,8 +188,8 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 ## Pending Tasks 📋
 
 ### Security/Authentication
-- [ ] **Directory Structure**: Create `Security/Authentication/` folder structure
-- [ ] **Service Account Authentication**: `01-service-account-authentication.md`
+- [x] **Directory Structure**: Create `Security/Authentication/` folder structure
+- [x] **Service Account Authentication**: `01-service-account-authentication.md`
   - Service Account token authentication methods
   - Automatic vs manual token mounting
   - JWT token validation and TokenRequest API
