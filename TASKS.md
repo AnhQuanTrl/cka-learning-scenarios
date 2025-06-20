@@ -120,6 +120,14 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Legacy application modernization patterns
   - Container initialization sequence management
   - Environment: k3s bare metal
+- [x] **Probe Types and Configuration**: `04-probe-types-and-configuration.md`
+  - HTTP probes with custom headers and paths
+  - TCP socket probes for network service checking
+  - Exec probes with custom commands and scripts
+  - gRPC probes for modern application protocols
+  - Probe timing configuration (initialDelaySeconds, periodSeconds, timeoutSeconds)
+  - Combined probe strategies and best practices
+  - Environment: k3s bare metal
 
 ## Pending Tasks 📋
 
@@ -128,14 +136,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 #### Configuration/Secrets (2 scenarios)
 
 #### Configuration/Probes (4 scenarios)
-- [ ] **Probe Types and Configuration**: `04-probe-types-and-configuration.md`
-  - HTTP probes with custom headers and paths
-  - TCP socket probes for network service checking
-  - Exec probes with custom commands and scripts
-  - gRPC probes for modern application protocols
-  - Probe timing configuration (initialDelaySeconds, periodSeconds, timeoutSeconds)
-  - Combined probe strategies and best practices
-  - Environment: k3s bare metal
+**All Configuration/Probes scenarios completed!** ✅
 
 #### Configuration/ResourceManagement (3 scenarios)
 - [ ] **Requests and Limits**: `01-requests-and-limits.md`
