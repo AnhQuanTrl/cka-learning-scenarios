@@ -38,6 +38,14 @@ Each scenario includes:
 - **Comprehensive Verification**: Provide specific commands to verify each task is completed correctly
 - **Real-world Context**: Scenarios reflect actual CKA exam patterns and requirements
 
+### Critical Structure Requirements
+- **No Forward References**: Never reference files, ConfigMaps, or content that hasn't been defined yet in the task descriptions
+- **Self-Contained Tasks**: Each task must include ALL information needed to complete it - no hunting through other sections
+- **Exact Content Specification**: When tasks require creating files, provide the exact file content within that task, not in verification commands
+- **Linear Flow**: Everything needed for a task must appear before or in that task, never after
+- **No Vague Content**: Instead of "with application settings" or "configuration files", specify exactly what content goes in each file
+- **Step-by-Step Clarity**: Break complex tasks into numbered sub-steps with exact content and commands
+
 ## Commands Claude Can Help With
 - `kubectl` command examples and best practices
 - YAML manifest creation and troubleshooting
@@ -61,3 +69,5 @@ Tell Claude which Kubernetes concepts you want to practice, and scenarios will b
 ## Project Management Notes
 - Remember to take a look at TASKS.md to get a good grasp of what needs to be done and the progress of the project.
 - Remember to change the status of task in TASKS.md.
+- **IMPORTANT**: When completing scenario implementations, ALWAYS move completed tasks from the "Pending Tasks" section to the "Completed Tasks" section in TASKS.md. This keeps the project organized and provides clear visibility into progress.
+- Update TASKS.md immediately after completing each major milestone or set of scenarios.

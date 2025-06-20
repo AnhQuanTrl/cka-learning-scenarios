@@ -54,11 +54,121 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Data independence and isolation testing with MySQL application
   - Environment: DigitalOcean Kubernetes (DOKS)
 
+### Configuration/ConfigMaps
+- [x] **Directory Structure**: Created `Configuration/ConfigMaps/` folder structure
+- [x] **ConfigMap Creation Methods**: `01-configmap-creation-methods.md`
+  - Imperative vs declarative creation (kubectl create vs YAML)
+  - Different data sources (literals, files, directories, binary data)
+  - Best practices for configuration organization and size management
+  - Comprehensive creation method comparison and troubleshooting
+  - Environment: k3s bare metal
+- [x] **ConfigMap Consumption Patterns**: `02-configmap-consumption-patterns.md`
+  - Environment variable injection (single keys, all keys, envFrom)
+  - Volume mounting (full ConfigMap, specific keys, subPath)
+  - Command line arguments and container startup configuration
+  - Combined consumption methods with Nginx web server demonstration
+  - Update propagation behavior and precedence rules
+  - Environment: k3s bare metal
+- [x] **ConfigMap Updates and Immutability**: `03-configmap-updates-and-immutability.md`
+  - Live configuration updates and application reload behavior
+  - Immutable ConfigMaps (Kubernetes 1.21+) and performance benefits
+  - Rolling updates triggered by configuration changes
+  - ConfigMap versioning strategies (name-based and hash-based)
+  - Production-ready configuration management patterns
+  - Environment: k3s bare metal
+
 ### Project Setup
 - [x] **CLAUDE.md**: Created with project purpose and scenario quality standards
 - [x] **Scenario Quality Standards**: Defined clear task instructions, practical applications, and verification requirements
 
 ## Pending Tasks 📋
+
+### Configuration Scenarios (Next Priority)
+
+#### Configuration/Secrets (3 scenarios)
+- [ ] **Secret Types and Creation**: `01-secret-types-and-creation.md`
+  - Opaque secrets (generic user-defined data)
+  - ServiceAccount token secrets
+  - Creation methods (imperative, declarative, from files)
+  - Base64 encoding/decoding and data validation
+  - Environment: k3s bare metal
+- [ ] **Secret Consumption and Security**: `02-secret-consumption-and-security.md`
+  - Environment variable injection vs volume mounting
+  - Security best practices and RBAC integration
+  - Secret data exposure risks and mitigation
+  - Practical application using secrets securely
+  - Environment: k3s bare metal
+- [ ] **Docker Registry Secrets**: `03-docker-registry-secrets.md`
+  - Creating docker-registry type secrets
+  - ImagePullSecrets configuration in Pods and ServiceAccounts
+  - Private registry authentication patterns
+  - Testing with private container images
+  - Environment: k3s bare metal with private registry simulation
+
+#### Configuration/Probes (4 scenarios) - HIGH PRIORITY
+- [ ] **Liveness Probes**: `01-liveness-probes.md`
+  - HTTP, TCP, and exec probe types for liveness checking
+  - Detecting and recovering from application deadlocks
+  - Container restart behavior and restart policies
+  - Practical applications with different liveness scenarios
+  - Environment: k3s bare metal
+- [ ] **Readiness Probes**: `02-readiness-probes.md`
+  - HTTP, TCP, and exec probe types for readiness checking
+  - Service endpoint management and traffic routing
+  - Slow-starting applications and initialization delays
+  - Load balancer integration and service discovery
+  - Environment: k3s bare metal
+- [ ] **Startup Probes**: `03-startup-probes.md`
+  - Managing slow-starting containers (databases, large applications)
+  - Startup probe interaction with liveness/readiness probes
+  - Legacy application modernization patterns
+  - Container initialization sequence management
+  - Environment: k3s bare metal
+- [ ] **Probe Types and Configuration**: `04-probe-types-and-configuration.md`
+  - HTTP probes with custom headers and paths
+  - TCP socket probes for network service checking
+  - Exec probes with custom commands and scripts
+  - gRPC probes for modern application protocols
+  - Probe timing configuration (initialDelaySeconds, periodSeconds, timeoutSeconds)
+  - Combined probe strategies and best practices
+  - Environment: k3s bare metal
+
+#### Configuration/ResourceManagement (3 scenarios)
+- [ ] **Requests and Limits**: `01-requests-and-limits.md`
+  - CPU and memory resource specification (units, syntax)
+  - Resource requests for scheduling and guarantees
+  - Resource limits for enforcement and protection
+  - Practical applications with different resource patterns
+  - Node resource allocation and capacity planning
+  - Environment: k3s bare metal
+- [ ] **Quality of Service Classes**: `02-quality-of-service-classes.md`
+  - Guaranteed QoS (requests == limits for all resources)
+  - Burstable QoS (requests < limits or partial resource specification)
+  - BestEffort QoS (no requests or limits specified)
+  - Pod eviction order during resource pressure
+  - QoS impact on scheduling and node resource management
+  - Environment: k3s bare metal
+- [ ] **Resource Quotas and Limits**: `03-resource-quotas-and-limits.md`
+  - Namespace-level ResourceQuota objects
+  - LimitRange objects for default and maximum resource constraints
+  - Resource quota enforcement and admission control
+  - Multi-tenant cluster resource management
+  - Resource monitoring and capacity planning
+  - Environment: k3s bare metal
+
+#### Configuration/ClusterAccess (2 scenarios)
+- [ ] **Kubeconfig Management**: `01-kubeconfig-management.md`
+  - Kubeconfig file structure (clusters, users, contexts)
+  - Authentication methods (certificates, tokens, username/password)
+  - Multiple kubeconfig file merging and precedence
+  - kubectl config commands for configuration management
+  - Environment: k3s bare metal
+- [ ] **Multiple Cluster Contexts**: `02-multiple-cluster-contexts.md`
+  - Managing development, staging, and production cluster access
+  - Context switching and namespace configuration
+  - User and cluster credential management
+  - Kubeconfig troubleshooting and validation
+  - Environment: k3s bare metal + DigitalOcean for multi-cluster scenarios
 
 ### Storage/StorageClass Scenarios
 
@@ -102,8 +212,8 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 **Storage/StorageClass scenarios**: 6 scenarios covering basic concepts through advanced CSI features
 **Storage/VolumeSnapshots scenarios**: 2 scenarios covering snapshot and cloning functionality
 
-Ready to move to next CKA domain:
-- **Workloads & Scheduling (15%)** - Pod scheduling, resource limits, DaemonSets, StatefulSets, Jobs
-- **Services & Networking (20%)** - Service types, Ingress, Network policies, DNS
-- **Cluster Architecture (25%)** - RBAC, cluster upgrades, etcd backup, node management  
-- **Troubleshooting (30%)** - Pod/node troubleshooting, debugging, log analysis
+**Next Priority: Configuration domain** 📋
+- **Total scenarios planned**: 15 scenarios across 5 subdirectories
+- **High Priority**: Probes (4 scenarios) - critical for application health and reliability
+- **Core Topics**: ConfigMaps (3), Secrets (3), ResourceManagement (3), ClusterAccess (2)
+- **Environment**: Primarily k3s bare metal, with DigitalOcean for multi-cluster scenarios
