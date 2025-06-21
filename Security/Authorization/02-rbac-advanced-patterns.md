@@ -1,19 +1,20 @@
 # RBAC Advanced Patterns
 
 ## Scenario Overview
-- **Time Limit**: 30 minutes
+- **Time Limit**: 45 minutes
 - **Difficulty**: Advanced
 - **Environment**: k3s bare metal
 
 ## Objective
-Learn to use advanced RBAC features, including aggregated ClusterRoles and the strategic use of built-in roles, to create a scalable and maintainable permissions structure.
+Implement production-grade RBAC patterns using aggregated ClusterRoles and demonstrate real-world permission validation through actual workload deployment and management.
 
 ## Context
-Your organization is scaling its use of Kubernetes. You need to create a tiered system of permissions for two new roles:
-1.  **`ops-lead`**: This role should have all the permissions of the built-in `view` ClusterRole, plus the ability to view secrets in all namespaces. This is for a senior operator who needs broad read-only access, including for troubleshooting secrets.
-2.  **`app-developer`**: This role needs to manage Deployments, Services, and Ingresses in any namespace, but should not have access to other resources like ConfigMaps or Secrets.
+Your organization is scaling its Kubernetes operations and needs a robust, maintainable RBAC system. The security team has mandated a tiered permission structure that can evolve without constant manual updates. You need to implement:
 
-To avoid duplicating permissions, you will use an aggregated ClusterRole for the `ops-lead` and create a new, focused ClusterRole for the `app-developer`.
+1. **`ops-lead`**: Senior operators who need comprehensive read-only access across all namespaces, including sensitive resources like secrets for troubleshooting production issues.
+2. **`app-developer`**: Application developers who need to deploy and manage their applications but should be restricted from accessing infrastructure resources or secrets.
+
+You'll use aggregated ClusterRoles to create a modular, scalable permission system that demonstrates production patterns including namespace isolation, workload-based validation, and automated role composition.
 
 ## Prerequisites
 - A running Kubernetes cluster (k3s is recommended).
@@ -21,180 +22,318 @@ To avoid duplicating permissions, you will use an aggregated ClusterRole for the
 
 ## Tasks
 
-### Task 1: Create a ClusterRole for Secret Viewing
-*Suggested Time: 5 minutes*
+### Task 1: Create Test Environment and Base Resources
+*Suggested Time: 8 minutes*
 
-First, create a small, focused `ClusterRole` that only grants permission to view secrets. This will be aggregated into the main `ops-lead` role.
+Create the testing environment and understand the foundation for aggregated ClusterRoles by examining Kubernetes' built-in roles.
 
-1.  **Create a `ClusterRole`** named `secret-viewer`.
-    - Create a file named `secret-viewer-clusterrole.yaml`:
-      ```yaml
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: ClusterRole
-      metadata:
-        name: secret-viewer
-      rules:
-      - apiGroups: [""]
-        resources: ["secrets"]
-        verbs: ["get", "list", "watch"]
-      ```
-    - Apply the manifest:
-      ```bash
-      kubectl apply -f secret-viewer-clusterrole.yaml
-      ```
+1. **Create test namespaces** for validating permissions:
+   ```bash
+   kubectl create namespace development
+   kubectl create namespace staging
+   kubectl create namespace production
+   ```
 
-### Task 2: Create an Aggregated ClusterRole for the Ops Lead
+2. **Examine the built-in `view` ClusterRole** to understand what permissions it provides:
+   ```bash
+   kubectl describe clusterrole view
+   ```
+   **Expected Output**: You should see extensive read-only permissions for most Kubernetes resources, but notably **no** access to secrets.
+
+3. **Create a focused ClusterRole** for secret access that will be aggregated later. Create a file named `secret-viewer-clusterrole.yaml`:
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: secret-viewer
+     labels:
+       rbac.example.com/aggregate-to-ops-lead: "true"
+   rules:
+   - apiGroups: [""]
+     resources: ["secrets"]
+     verbs: ["get", "list", "watch"]
+   ```
+
+4. **Apply the secret-viewer ClusterRole**:
+   ```bash
+   kubectl apply -f secret-viewer-clusterrole.yaml
+   ```
+
+5. **Verify the ClusterRole was created with correct labels**:
+   ```bash
+   kubectl get clusterrole secret-viewer --show-labels
+   ```
+   **Expected Output**: Should show `rbac.example.com/aggregate-to-ops-lead=true` in the LABELS column.
+
+### Task 2: Implement Aggregated ClusterRole Pattern
+*Suggested Time: 12 minutes*
+
+Create an aggregated ClusterRole that automatically composes permissions from multiple smaller roles. This demonstrates a production pattern for building complex, maintainable RBAC structures.
+
+1. **Understand aggregation**: Aggregated ClusterRoles use label selectors to automatically include rules from other ClusterRoles. When you label a ClusterRole to match the selector, Kubernetes automatically adds its rules to the aggregated role.
+
+2. **Label the built-in `view` ClusterRole** to be included in our aggregation:
+   ```bash
+   kubectl label clusterrole view rbac.example.com/aggregate-to-ops-lead=true
+   ```
+
+3. **Verify the label was applied**:
+   ```bash
+   kubectl get clusterrole view --show-labels
+   ```
+   **Expected Output**: Should show `rbac.example.com/aggregate-to-ops-lead=true` in the labels.
+
+4. **Create the aggregated ClusterRole**. Create a file named `ops-lead-aggregated-clusterrole.yaml`:
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: ops-lead-role
+   aggregationRule:
+     clusterRoleSelectors:
+     - matchLabels:
+         rbac.example.com/aggregate-to-ops-lead: "true"
+   rules: []
+   ```
+   Note the empty `rules: []` - this will be automatically populated by the aggregation controller.
+
+5. **Apply the aggregated ClusterRole**:
+   ```bash
+   kubectl apply -f ops-lead-aggregated-clusterrole.yaml
+   ```
+
+6. **Wait for aggregation and verify the combined permissions**:
+   ```bash
+   kubectl describe clusterrole ops-lead-role
+   ```
+   **Expected Output**: Should show rules from both `view` and `secret-viewer` ClusterRoles automatically combined.
+
+7. **Create a ClusterRoleBinding** for testing:
+   ```bash
+   kubectl create clusterrolebinding ops-user-binding --clusterrole=ops-lead-role --user=ops-user
+   ```
+
+### Task 3: Create Production-Grade Developer Role
 *Suggested Time: 10 minutes*
 
-Now, create the main `ops-lead` role. This role will use an `aggregationRule` to automatically inherit permissions from both the built-in `view` role and your new `secret-viewer` role.
+Create a focused ClusterRole for developers that follows the principle of least privilege while enabling them to deploy and manage applications effectively.
 
-1.  **Create the `ops-lead-role` `ClusterRole`**.
-    - Create a file named `ops-lead-aggregated-clusterrole.yaml`:
-      ```yaml
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: ClusterRole
-      metadata:
-        name: ops-lead-role
-      aggregationRule:
-        clusterRoleSelectors:
-        - matchLabels:
-            rbac.example.com/aggregate-to-ops-lead: "true"
-      ```
-    - Apply the manifest:
-      ```bash
-      kubectl apply -f ops-lead-aggregated-clusterrole.yaml
-      ```
+1. **Create the app-developer ClusterRole**. Create a file named `app-developer-clusterrole.yaml`:
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: app-developer-role
+   rules:
+   # Core application resources
+   - apiGroups: ["apps"]
+     resources: ["deployments", "replicasets"]
+     verbs: ["*"]
+   - apiGroups: [""]
+     resources: ["services", "endpoints"]
+     verbs: ["*"]
+   - apiGroups: ["networking.k8s.io"]
+     resources: ["ingresses"]
+     verbs: ["*"]
+   # Read-only access to pods for debugging
+   - apiGroups: [""]
+     resources: ["pods", "pods/log", "pods/status"]
+     verbs: ["get", "list", "watch"]
+   # ConfigMaps for application configuration (but not secrets)
+   - apiGroups: [""]
+     resources: ["configmaps"]
+     verbs: ["*"]
+   ```
 
-2.  **Label the `view` and `secret-viewer` ClusterRoles** to be selected by the aggregation rule.
-    ```bash
-    kubectl label clusterrole view rbac.example.com/aggregate-to-ops-lead=true
-    kubectl label clusterrole secret-viewer rbac.example.com/aggregate-to-ops-lead=true
-    ```
+2. **Apply the ClusterRole**:
+   ```bash
+   kubectl apply -f app-developer-clusterrole.yaml
+   ```
 
-3.  **Bind the `ops-lead-role`** to a user named `ops-user`.
-    ```bash
-    kubectl create clusterrolebinding ops-user-binding --clusterrole=ops-lead-role --user=ops-user
-    ```
+3. **Create a ClusterRoleBinding** for testing:
+   ```bash
+   kubectl create clusterrolebinding dev-user-binding --clusterrole=app-developer-role --user=dev-user
+   ```
 
-### Task 3: Create a Focused ClusterRole for the App Developer
+4. **Verify the ClusterRole permissions**:
+   ```bash
+   kubectl describe clusterrole app-developer-role
+   ```
+   **Expected Output**: Should show specific rules for deployments, services, ingresses, pods (read-only), and configmaps, but no access to secrets or cluster-level resources.
+
+### Task 4: Validate Permissions with Real Workloads
+*Suggested Time: 15 minutes*
+
+Test the RBAC implementation by actually deploying and managing applications, demonstrating how these roles work in practice.
+
+1. **Create test secrets in each namespace** for ops validation:
+   ```bash
+   kubectl create secret generic app-config --from-literal=database-url=postgresql://localhost:5432/app -n development
+   kubectl create secret generic app-config --from-literal=database-url=postgresql://localhost:5432/app -n staging
+   ```
+
+2. **Test ops-user permissions** (should have broad read access):
+   ```bash
+   kubectl auth can-i list pods --as=ops-user --all-namespaces
+   ```
+   **Expected Output**: `yes`
+   
+   ```bash
+   kubectl auth can-i list secrets --as=ops-user --all-namespaces
+   ```
+   **Expected Output**: `yes`
+   
+   ```bash
+   kubectl auth can-i create deployments --as=ops-user -n development
+   ```
+   **Expected Output**: `no`
+
+3. **Test dev-user deployment capabilities** by creating a real application:
+   ```bash
+   kubectl auth can-i create deployments --as=dev-user -n development
+   ```
+   **Expected Output**: `yes`
+
+4. **Create a test deployment as dev-user**. Create a file named `test-app-deployment.yaml`:
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: test-app
+     namespace: development
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: test-app
+     template:
+       metadata:
+         labels:
+           app: test-app
+       spec:
+         containers:
+         - name: nginx
+           image: nginx:1.20
+           ports:
+           - containerPort: 80
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: test-app-service
+     namespace: development
+   spec:
+     selector:
+       app: test-app
+     ports:
+     - port: 80
+       targetPort: 80
+   ```
+
+5. **Apply the deployment using impersonation**:
+   ```bash
+   kubectl apply -f test-app-deployment.yaml --as=dev-user
+   ```
+   **Expected Output**: Both deployment and service should be created successfully.
+
+6. **Test dev-user restrictions**:
+   ```bash
+   kubectl auth can-i list secrets --as=dev-user -n development
+   ```
+   **Expected Output**: `no`
+   
+   ```bash
+   kubectl auth can-i list nodes --as=dev-user
+   ```
+   **Expected Output**: `no`
+
+7. **Demonstrate ops-user can troubleshoot the deployment**:
+   ```bash
+   kubectl get pods -n development --as=ops-user
+   kubectl get secrets -n development --as=ops-user
+   ```
+   **Expected Output**: Both commands should succeed, showing ops-user can see workloads and secrets for troubleshooting.
+
+### Task 5: Demonstrate Dynamic Role Composition
 *Suggested Time: 5 minutes*
 
-Create a `ClusterRole` for the `app-developer` that grants specific permissions across all namespaces.
+Show how aggregated roles automatically update when new component roles are added, demonstrating the scalability benefit of this pattern.
 
-1.  **Create the `app-developer-role` `ClusterRole`**.
-    - Create a file named `app-developer-clusterrole.yaml`:
-      ```yaml
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: ClusterRole
-      metadata:
-        name: app-developer-role
-      rules:
-      - apiGroups: ["apps", "extensions"]
-        resources: ["deployments"]
-        verbs: ["*"]
-      - apiGroups: [""]
-        resources: ["services"]
-        verbs: ["*"]
-      - apiGroups: ["networking.k8s.io"]
-        resources: ["ingresses"]
-        verbs: ["*"]
-      ```
-    - Apply the manifest:
-      ```bash
-      kubectl apply -f app-developer-clusterrole.yaml
-      ```
+1. **Create an additional component role** for log access. Create a file named `log-viewer-clusterrole.yaml`:
+   ```yaml
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: log-viewer
+     labels:
+       rbac.example.com/aggregate-to-ops-lead: "true"
+   rules:
+   - apiGroups: [""]
+     resources: ["pods/log"]
+     verbs: ["get", "list"]
+   ```
 
-2.  **Bind the `app-developer-role`** to a user named `dev-user`.
-    ```bash
-    kubectl create clusterrolebinding dev-user-binding --clusterrole=app-developer-role --user=dev-user
-    ```
+2. **Apply the new role**:
+   ```bash
+   kubectl apply -f log-viewer-clusterrole.yaml
+   ```
 
-### Task 4: Verify Permissions
-*Suggested Time: 10 minutes*
+3. **Verify automatic aggregation** - the ops-lead-role should now include log viewing permissions:
+   ```bash
+   kubectl describe clusterrole ops-lead-role | grep -A 10 -B 5 "pods/log"
+   ```
+   **Expected Output**: Should show the new `pods/log` permission automatically added to the aggregated role.
 
-Use `kubectl auth can-i` to verify the permissions for both new roles.
-
-1.  **Test the `ops-user`'s permissions**.
-    - Can they view pods? (Should be **yes**, from the `view` role).
-      ```bash
-      kubectl auth can-i list pods --as=ops-user -A
-      ```
-    - Can they view secrets? (Should be **yes**, from the `secret-viewer` role).
-      ```bash
-      kubectl auth can-i list secrets --as=ops-user -A
-      ```
-    - Can they edit pods? (Should be **no**).
-      ```bash
-      kubectl auth can-i patch pods --as=ops-user -n default
-      ```
-
-2.  **Test the `dev-user`'s permissions**.
-    - Can they create deployments? (Should be **yes**).
-      ```bash
-      kubectl auth can-i create deployments --as=dev-user -n default
-      ```
-    - Can they list secrets? (Should be **no**).
-      ```bash
-      kubectl auth can-i list secrets --as=dev-user -n default
-      ```
-    - Can they list nodes? (Should be **no**).
-      ```bash
-      kubectl auth can-i list nodes --as=dev-user
-      ```
-
-## Verification Commands
-
-### Task 2: Aggregated Role
-- **Check the labels on the `view` role**:
-  ```bash
-  kubectl get clusterrole view --show-labels
-  ```
-  - **Expected Output**: Should show the label `rbac.example.com/aggregate-to-ops-lead=true`.
-- **Describe the `ops-lead-role`**:
-  ```bash
-  kubectl describe clusterrole ops-lead-role
-  ```
-  - **Expected Output**: The `Rules` section should list the permissions inherited from both `view` and `secret-viewer`.
-
-### Task 4: Permissions Check
-- **Ops User (Success)**:
-  ```bash
-  kubectl auth can-i list secrets --as=ops-user -A
-  ```
-  - **Expected Output**: `yes`
-- **Ops User (Failure)**:
-  ```bash
-  kubectl auth can-i patch pods --as=ops-user -n default
-  ```
-  - **Expected Output**: `no`
-- **Dev User (Success)**:
-  ```bash
-  kubectl auth can-i create deployments --as=dev-user -n default
-  ```
-  - **Expected Output**: `yes`
-- **Dev User (Failure)**:
-  ```bash
-  kubectl auth can-i list secrets --as=dev-user -n default
-  ```
-  - **Expected Output**: `no`
+4. **Test the new permission**:
+   ```bash
+   kubectl auth can-i get pods/log --as=ops-user -n development
+   ```
+   **Expected Output**: `yes` - demonstrating the role automatically gained the new capability.
 
 ## Expected Results
-- An aggregated `ClusterRole` named `ops-lead-role` is created, which automatically inherits permissions from any other `ClusterRole` matching its label selector.
-- The `ops-user` has cluster-wide read access to most resources (via `view`) and secrets (via `secret-viewer`).
-- A focused `ClusterRole` named `app-developer-role` is created, granting only the necessary permissions to manage application-related resources.
-- The `dev-user` can manage deployments, services, and ingresses in any namespace but cannot access other resources.
+- **Three test namespaces** (`development`, `staging`, `production`) for realistic permission testing
+- **Aggregated ClusterRole** (`ops-lead-role`) that automatically composes permissions from labeled component roles
+- **Modular permission structure** with separate roles for secrets, logs, and base viewing permissions
+- **Production-grade developer role** (`app-developer-role`) with precise application management permissions
+- **Real workload deployment** demonstrating actual permission usage beyond theoretical testing
+- **Dynamic role composition** showing how aggregated roles automatically update when new components are added
+- **Comprehensive validation** through both `kubectl auth can-i` and actual resource operations
 
 ## Key Learning Points
-- **Aggregated ClusterRoles**: This is a powerful feature for building complex roles out of smaller, reusable components. It helps keep your RBAC configuration DRY (Don't Repeat Yourself) and makes it easier to manage.
-- **`aggregationRule`**: This field in a `ClusterRole`'s metadata defines the label selector used to find other `ClusterRoles` to aggregate. The controller manager automatically keeps the rules in sync.
-- **Built-in Roles**: Kubernetes comes with several useful default roles like `view`, `edit`, and `admin`. Leveraging these roles (especially `view`) as a base for your own custom roles is a common and effective pattern.
-- **Role Granularity**: Create roles that are as granular as possible. The `app-developer-role` is a good example of a role that grants just enough permission to do a specific job, without granting overly broad access.
+- **Aggregated ClusterRoles**: Enable modular, maintainable RBAC by automatically composing permissions from multiple smaller roles using label selectors
+- **Label-based Role Composition**: The `aggregationRule` uses label selectors to dynamically include permissions from other ClusterRoles, with automatic synchronization by the controller manager
+- **Built-in Role Leverage**: Production RBAC strategies should build upon Kubernetes' built-in roles (`view`, `edit`, `admin`) rather than recreating their functionality
+- **Principle of Least Privilege**: Each role should grant only the minimum permissions necessary for its function, as demonstrated by the focused `app-developer-role`
+- **Real-world Validation**: RBAC testing should include actual workload deployment and management, not just theoretical permission checking
+- **Dynamic Role Evolution**: Aggregated roles automatically gain new capabilities when component roles are added, enabling scalable permission management
+- **Namespace-scoped Testing**: Production RBAC validation requires testing across multiple namespaces to ensure proper isolation and access patterns
 
 ## Exam & Troubleshooting Tips
-- **Exam Tip**: While you may not be asked to create a complex aggregated role from scratch, you should be able to understand how they work and how to debug them. Know how to check labels (`--show-labels`) and describe roles to see their effective permissions.
-- **Troubleshooting**: If an aggregated role doesn't have the expected permissions, the first thing to check is the labels. Ensure that the `clusterRoleSelectors` in the aggregated role match the labels on the roles you want to include.
-- **Controller Lag**: The controller that updates aggregated roles can have a slight delay. If you've just labeled a role and don't see the permissions update immediately, wait a few seconds and check again.
-- **Cleanup**: Remember to remove the labels from the built-in roles when you are done, to avoid leaving your cluster in a non-standard state.
-  ```bash
-  kubectl label clusterrole view rbac.example.com/aggregate-to-ops-lead-
-  ```
+
+### CKA Exam Strategies
+- **Understanding Aggregation**: Be able to explain how aggregated ClusterRoles work and identify them by the presence of `aggregationRule` and empty `rules: []`
+- **Label Debugging**: Use `kubectl get clusterrole <name> --show-labels` to verify label selectors match between aggregated roles and their components
+- **Permission Verification**: Always test RBAC with `kubectl auth can-i` before assuming permissions work correctly
+- **Built-in Role Knowledge**: Memorize the capabilities of built-in roles (`view`, `edit`, `admin`, `cluster-admin`) to leverage them effectively
+
+### Common Troubleshooting Scenarios
+- **Missing Permissions in Aggregated Role**: Check if component roles have the correct labels matching the `clusterRoleSelectors`
+- **Controller Synchronization Lag**: Aggregation updates can take 5-10 seconds; use `kubectl describe clusterrole <name>` to verify current effective permissions
+- **Impersonation Testing**: Always test with `--as=username` to validate permissions from the user's perspective
+- **Namespace vs Cluster Scope**: Remember that ClusterRoles grant cluster-wide permissions; use RoleBindings to restrict to specific namespaces
+
+### Production Troubleshooting
+- **Permission Denied Errors**: Use `kubectl auth can-i <verb> <resource> --as=<user> -n <namespace>` to diagnose access issues
+- **Role Binding Confusion**: Check both ClusterRoleBindings and RoleBindings when troubleshooting user permissions
+- **Service Account Issues**: Remember that pods use service account tokens; test permissions with `--as=system:serviceaccount:<namespace>:<sa-name>`
+
+### Cleanup Commands
+```bash
+# Remove custom labels from built-in roles
+kubectl label clusterrole view rbac.example.com/aggregate-to-ops-lead-
+
+# Delete test resources
+kubectl delete namespace development staging production
+kubectl delete clusterrole secret-viewer log-viewer ops-lead-role app-developer-role
+kubectl delete clusterrolebinding ops-user-binding dev-user-binding
+```
