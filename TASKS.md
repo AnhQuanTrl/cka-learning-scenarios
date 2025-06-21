@@ -211,8 +211,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Resource and verb permission mapping
   - Namespace-level vs cluster-level authorization
   - Environment: k3s bare metal
-
-### Security/Authorization
 - [x] **RBAC Advanced Patterns**: `02-rbac-advanced-patterns.md`
   - Aggregated ClusterRoles and permission inheritance
   - Built-in system roles and their usage
@@ -220,6 +218,10 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Permission escalation prevention
   - RBAC best practices and security considerations
   - Environment: k3s bare metal
+
+## Pending Tasks ⏳
+
+### Security/Authorization
 - [ ] **Authorization Troubleshooting**: `03-authorization-troubleshooting.md`
   - kubectl auth can-i permission testing
   - RBAC decision flow and debugging
