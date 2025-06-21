@@ -237,17 +237,15 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Security policy violations and remediation
   - Migration from deprecated PodSecurityPolicy
   - Environment: k3s bare metal
-
-## Pending Tasks ⏳
-
-### Security/AdmissionControl
-- [ ] **Security Contexts and Capabilities**: `02-security-contexts-capabilities.md`
+- [x] **Security Contexts and Capabilities**: `02-security-contexts-capabilities.md`
   - Container and Pod security context configuration
   - runAsUser, runAsGroup, fsGroup settings
   - Linux capabilities management (add/drop)
   - Non-root container execution
   - Filesystem permissions and access control
   - Environment: k3s bare metal
+
+## Pending Tasks ⏳
 
 ### Security/NetworkSecurity
 - [ ] **Directory Structure**: Create `Security/NetworkSecurity/` folder structure
