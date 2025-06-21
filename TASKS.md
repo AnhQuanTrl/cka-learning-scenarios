@@ -226,17 +226,21 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Permission debugging workflows
   - Environment: k3s bare metal
 
-## Pending Tasks ⏳
+## Completed Tasks ✅
 
 ### Security/AdmissionControl
-- [ ] **Directory Structure**: Create `Security/AdmissionControl/` folder structure
-- [ ] **Pod Security Standards**: `01-pod-security-standards.md`
+- [x] **Directory Structure**: Created `Security/AdmissionControl/` folder structure
+- [x] **Pod Security Standards**: `01-pod-security-standards.md`
   - Privileged, Baseline, Restricted security profiles
   - Pod Security Admission controller configuration
   - Namespace-level security policy enforcement
   - Security policy violations and remediation
   - Migration from deprecated PodSecurityPolicy
   - Environment: k3s bare metal
+
+## Pending Tasks ⏳
+
+### Security/AdmissionControl
 - [ ] **Security Contexts and Capabilities**: `02-security-contexts-capabilities.md`
   - Container and Pod security context configuration
   - runAsUser, runAsGroup, fsGroup settings
