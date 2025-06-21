@@ -1,218 +1,239 @@
 # Service Account Authentication
 
 ## Scenario Overview
-- **Time Limit**: 25 minutes
+- **Time Limit**: 30 minutes
 - **Difficulty**: Intermediate
 - **Environment**: k3s bare metal
 
 ## Objective
-Learn how to create and use a Service Account for external application authentication by manually generating a token and constructing a Kubeconfig file.
+Master ServiceAccount authentication patterns by implementing both automatic token mounting and manual token generation for a real monitoring application, comparing legacy and modern approaches.
 
 ## Context
-You are a Kubernetes administrator for a company that runs a critical application in the `app-prod` namespace. The monitoring team needs to deploy an external script that can list pods and view logs within that namespace to check application health. To follow the principle of least privilege, you must provide them with a Kubeconfig file that grants only the necessary read-only permissions and is tied to a specific Service Account, not a user.
+Your company runs a microservices architecture where different teams need automated monitoring. The platform team has requested you to set up authentication for two monitoring scenarios:
+
+1. **Internal Pod Monitoring**: Deploy a monitoring pod that automatically authenticates using ServiceAccount tokens to collect metrics from the same namespace
+2. **External Monitoring Tool**: Create a kubeconfig for an external monitoring script that needs read-only access to multiple namespaces
+
+You need to implement both the modern TokenRequest API approach and the legacy token method, then compare their security characteristics and lifecycle management.
 
 ## Prerequisites
-- A running Kubernetes cluster (k3s is recommended).
-- `kubectl` installed and configured with administrative access.
+- A running Kubernetes cluster (k3s is recommended)
+- `kubectl` installed and configured with administrative access
+- Basic understanding of Kubernetes authentication concepts
 
 ## Tasks
 
-### Task 1: Create the Namespace and a Service Account
+### Task 1: Create Initial Resources and Monitoring Application
+*Suggested Time: 8 minutes*
+
+Set up the foundation with namespaces, ServiceAccounts, and a real monitoring workload.
+
+1. **Create two namespaces**: `monitoring` and `app-prod`
+
+2. **Create a ServiceAccount** named `pod-monitor` in the `monitoring` namespace
+
+3. **Create a simple monitoring application** that will use the ServiceAccount. Create a deployment named `pod-monitor` in the `monitoring` namespace with the following specifications:
+   - Use image: `busybox:1.35`
+   - Command: `sleep 3600`
+   - ServiceAccount: `pod-monitor`
+   - Include environment variable `MONITORED_NAMESPACE` set to `app-prod`
+
+4. **Create a test application** in the `app-prod` namespace. Deploy a pod named `test-app` using `nginx:1.21` image to provide something for the monitoring to observe.
+
+### Task 2: Configure RBAC for Cross-Namespace Monitoring
+*Suggested Time: 7 minutes*
+
+Set up permissions that allow the monitoring ServiceAccount to read resources across namespaces.
+
+1. **Create a ClusterRole** named `cross-namespace-monitor` that grants the following permissions:
+   - Read access to pods, services, and deployments in any namespace
+   - Read access to pod logs across namespaces
+   - Read access to nodes (for cluster-level monitoring)
+
+2. **Create a ClusterRoleBinding** that grants the `pod-monitor` ServiceAccount the `cross-namespace-monitor` ClusterRole
+
+3. **Verify the automatic token mounting** by checking that the monitoring pod has access to the ServiceAccount token through the projected volume
+
+### Task 3: Test Automatic ServiceAccount Authentication
 *Suggested Time: 5 minutes*
 
-First, set up the environment by creating the namespace and the Service Account for the monitoring tool.
+Validate that the monitoring pod can authenticate and access resources using its automatically mounted token.
 
-1.  **Create a new namespace** called `app-prod`.
-    ```bash
-    kubectl create namespace app-prod
-    ```
+1. **Execute into the monitoring pod** and locate the ServiceAccount token files
 
-2.  **Create a new Service Account** named `monitoring-sa` in the `app-prod` namespace.
-    ```bash
-    kubectl create serviceaccount monitoring-sa -n app-prod
-    ```
+2. **Test authentication** by using the token to make API calls to list pods in both `monitoring` and `app-prod` namespaces
 
-### Task 2: Define a Read-Only Role
-*Suggested Time: 5 minutes*
+3. **Verify token characteristics** including the issuer, expiration time, and audience claims
 
-Create a `Role` that grants the specific, minimal permissions required by the monitoring tool.
+### Task 4: Create Manual Token for External Access
+*Suggested Time: 7 minutes*
 
-1.  **Create a YAML file** named `monitoring-role.yaml` with a `Role` that allows `get`, `list`, and `watch` access to `pods` and `pods/log`.
-    ```yaml
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: Role
-    metadata:
-      name: pod-reader-role
-      namespace: app-prod
-    rules:
-    - apiGroups: [""] # "" indicates the core API group
-      resources: ["pods", "pods/log"]
-      verbs: ["get", "list", "watch"]
-    ```
+Generate a longer-lived token for external monitoring tools using the legacy approach.
 
-2.  **Apply the manifest** to create the Role.
-    ```bash
-    kubectl apply -f monitoring-role.yaml
-    ```
+1. **Create a Secret** of type `kubernetes.io/service-account-token` for the `pod-monitor` ServiceAccount
 
-### Task 3: Bind the Role to the Service Account
-*Suggested Time: 5 minutes*
+2. **Extract the token, CA certificate, and server information** needed to build a kubeconfig
 
-Create a `RoleBinding` to connect the `monitoring-sa` Service Account to the `pod-reader-role`.
+3. **Construct a kubeconfig file** named `external-monitor-kubeconfig.yaml` with:
+   - Cluster configuration with CA certificate and server URL
+   - User configuration with the extracted token
+   - Context that defaults to the `app-prod` namespace
 
-1.  **Create the RoleBinding** using an imperative `kubectl` command.
-    ```bash
-    kubectl create rolebinding monitoring-rb --role=pod-reader-role --serviceaccount=app-prod:monitoring-sa -n app-prod
-    ```
+### Task 5: Compare Token Approaches and Test Security Boundaries
+*Suggested Time: 3 minutes*
 
-2.  **Verify the RoleBinding** was created successfully.
-    ```bash
-    kubectl get rolebinding monitoring-rb -n app-prod -o yaml
-    ```
+Analyze the differences between automatic and manual token approaches, then verify security boundaries.
 
-### Task 4: Manually Generate a Token and Construct a Kubeconfig
-*Suggested Time: 10 minutes*
+1. **Compare token characteristics**:
+   - Examine expiration times of both token types
+   - Check token issuer and audience claims
+   - Document which approach provides better security
 
-This is the core task. Manually create a long-lived token for the Service Account and use it to build a new Kubeconfig file from scratch.
-
-1.  **Create a new Secret** to hold the Service Account token.
-    - Create a file named `monitoring-sa-secret.yaml` with the following content:
-      ```yaml
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: monitoring-sa-token
-        namespace: app-prod
-        annotations:
-          kubernetes.io/service-account.name: monitoring-sa
-      type: kubernetes.io/service-account-token
-      ```
-    - Apply the manifest:
-      ```bash
-      kubectl apply -f monitoring-sa-secret.yaml
-      ```
-
-2.  **Extract the token and CA certificate** from the cluster and store them in environment variables.
-    ```bash
-    # Extract the token
-    TOKEN=$(kubectl get secret monitoring-sa-token -n app-prod -o jsonpath='{.data.token}' | base64 --decode)
-
-    # Extract the CA certificate from your current kubeconfig
-    CA_CERT_DATA=$(kubectl config view --raw -o jsonpath='{.clusters[?(@.name=="default")].cluster.certificate-authority-data}')
-    ```
-    **Note**: Replace `default` with your actual cluster name if it's different.
-
-3.  **Get the server URL**.
-    ```bash
-    SERVER_URL=$(kubectl config view --raw -o jsonpath='{.clusters[?(@.name=="default")].cluster.server}')
-    ```
-
-4.  **Construct the new Kubeconfig file** named `monitoring-kubeconfig.yaml`.
-    ```bash
-    cat <<EOF > monitoring-kubeconfig.yaml
-    apiVersion: v1
-    kind: Config
-    clusters:
-    - name: default
-      cluster:
-        certificate-authority-data: $CA_CERT_DATA
-        server: $SERVER_URL
-    contexts:
-    - name: monitoring-context
-      context:
-        cluster: default
-        namespace: app-prod
-        user: monitoring-sa
-    current-context: monitoring-context
-    users:
-    - name: monitoring-sa
-      user:
-        token: $TOKEN
-    EOF
-    ```
-
-### Task 5: Test the New Kubeconfig
-*Suggested Time: 5 minutes*
-
-Verify that the `monitoring-kubeconfig.yaml` file works as expected and only grants the intended permissions.
-
-1.  **Use the new Kubeconfig** to list pods in the `app-prod` namespace. This should succeed (even if it returns no pods).
-    ```bash
-    kubectl --kubeconfig=monitoring-kubeconfig.yaml get pods
-    ```
-
-2.  **Attempt to list pods** in the `kube-system` namespace. This command must **fail**.
-    ```bash
-    kubectl --kubeconfig=monitoring-kubeconfig.yaml get pods -n kube-system
-    ```
-
-3.  **Attempt to create a resource**. This command must also **fail**.
-    ```bash
-    kubectl --kubeconfig=monitoring-kubeconfig.yaml run nginx --image=nginx
-    ```
+2. **Test security boundaries** using the external kubeconfig:
+   - Verify read access to allowed resources
+   - Confirm creation operations are denied
+   - Test access to unauthorized namespaces (should fail)
 
 ## Verification Commands
 
-### Task 1: Service Account Creation
-- **Check for the Service Account**:
-  ```bash
-  kubectl get sa monitoring-sa -n app-prod
-  ```
-  - **Expected Output**: The `monitoring-sa` Service Account should be listed.
+### Task 1: Resource Creation Verification
+```bash
+# Verify namespaces exist
+kubectl get namespaces monitoring app-prod
 
-### Task 2: Role Creation
-- **Check for the Role**:
-  ```bash
-  kubectl get role pod-reader-role -n app-prod
-  ```
-  - **Expected Output**: The `pod-reader-role` should be listed.
+# Check ServiceAccount creation
+kubectl get serviceaccount pod-monitor -n monitoring
 
-### Task 3: RoleBinding
-- **Describe the RoleBinding**:
-  ```bash
-  kubectl describe rolebinding monitoring-rb -n app-prod
-  ```
-  - **Expected Output**: The output should show the `pod-reader-role` bound to the `monitoring-sa` Service Account.
+# Verify monitoring deployment
+kubectl get deployment pod-monitor -n monitoring -o jsonpath='{.spec.template.spec.serviceAccountName}'
 
-### Task 4: Kubeconfig Construction
-- **View the generated Kubeconfig**:
-  ```bash
-  cat monitoring-kubeconfig.yaml
-  ```
-  - **Expected Output**: The file should contain the cluster, context, and user sections, with the token embedded.
+# Confirm test application is running
+kubectl get pod test-app -n app-prod
+```
 
-### Task 5: Verification
-- **Successful command**:
-  ```bash
-  kubectl --kubeconfig=monitoring-kubeconfig.yaml get pods -n app-prod
-  ```
-  - **Expected Output**: `No resources found in app-prod namespace.` (or a list of pods if you have any).
-- **Failed command (wrong namespace)**:
-  ```bash
-  kubectl --kubeconfig=monitoring-kubeconfig.yaml get pods -n kube-system
-  ```
-  - **Expected Output**: An error message like: `Error from server (Forbidden): pods is forbidden: User "system:serviceaccount:app-prod:monitoring-sa" cannot list resource "pods" in API group "" in the namespace "kube-system"`.
-- **Failed command (wrong verb)**:
-  ```bash
-  kubectl --kubeconfig=monitoring-kubeconfig.yaml run nginx --image=nginx
-  ```
-  - **Expected Output**: An error message like: `Error from server (Forbidden): pods is forbidden: User "system:serviceaccount:app-prod:monitoring-sa" cannot create resource "pods" in API group "" in the namespace "app-prod"`.
+**Expected Output**:
+- Both namespaces should be listed as `Active`
+- ServiceAccount `pod-monitor` should exist in `monitoring` namespace
+- Deployment should show `serviceAccountName: pod-monitor`
+- Test app pod should be in `Running` status
+
+### Task 2: RBAC Configuration Verification
+```bash
+# Check ClusterRole exists and has correct permissions
+kubectl get clusterrole cross-namespace-monitor -o yaml
+
+# Verify ClusterRoleBinding
+kubectl get clusterrolebinding -o yaml | grep -A 5 -B 5 "pod-monitor"
+
+# Test ServiceAccount permissions
+kubectl auth can-i list pods --as=system:serviceaccount:monitoring:pod-monitor -n app-prod
+kubectl auth can-i list pods --as=system:serviceaccount:monitoring:pod-monitor -n monitoring
+kubectl auth can-i get nodes --as=system:serviceaccount:monitoring:pod-monitor
+```
+
+**Expected Output**:
+- ClusterRole should contain rules for pods, services, deployments with get/list/watch verbs
+- ClusterRoleBinding should show `pod-monitor` ServiceAccount as subject
+- All `auth can-i` commands should return `yes`
+
+### Task 3: Automatic Token Verification
+```bash
+# Check automatic token mounting
+kubectl exec -n monitoring deployment/pod-monitor -- ls -la /var/run/secrets/kubernetes.io/serviceaccount/
+
+# Verify token works for API calls
+kubectl exec -n monitoring deployment/pod-monitor -- sh -c 'curl -k -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" https://kubernetes.default.svc/api/v1/namespaces/app-prod/pods'
+
+# Check token expiration
+kubectl exec -n monitoring deployment/pod-monitor -- sh -c 'cat /var/run/secrets/kubernetes.io/serviceaccount/token' | cut -d. -f2 | base64 -d | jq -r '.exp'
+```
+
+**Expected Output**:
+- Token directory should contain `token`, `ca.crt`, and `namespace` files
+- API call should return JSON with pod information
+- Token should have expiration time (Unix timestamp)
+
+### Task 4: Manual Token Verification
+```bash
+# Verify Secret creation
+kubectl get secret -n monitoring -o jsonpath='{.items[?(@.type=="kubernetes.io/service-account-token")].metadata.name}'
+
+# Test external kubeconfig
+kubectl --kubeconfig=external-monitor-kubeconfig.yaml get pods -n app-prod
+kubectl --kubeconfig=external-monitor-kubeconfig.yaml get pods -n monitoring
+
+# Verify kubeconfig structure
+kubectl --kubeconfig=external-monitor-kubeconfig.yaml config view
+```
+
+**Expected Output**:
+- Secret name should be listed
+- Pod listing should work for both namespaces
+- Config view should show cluster, context, and user sections
+
+### Task 5: Security and Comparison Verification
+```bash
+# Compare token expiration times
+echo "Automatic token expiration:"
+kubectl exec -n monitoring deployment/pod-monitor -- sh -c 'cat /var/run/secrets/kubernetes.io/serviceaccount/token' | cut -d. -f2 | base64 -d | jq -r '.exp | strftime("%Y-%m-%d %H:%M:%S")'
+
+echo "Manual token expiration:"
+kubectl get secret -n monitoring -o jsonpath='{.items[?(@.type=="kubernetes.io/service-account-token")].data.token}' | base64 -d | cut -d. -f2 | base64 -d | jq -r 'if .exp then (.exp | strftime("%Y-%m-%d %H:%M:%S")) else "No expiration" end'
+
+# Test security boundaries
+kubectl --kubeconfig=external-monitor-kubeconfig.yaml create deployment test --image=nginx -n app-prod
+kubectl --kubeconfig=external-monitor-kubeconfig.yaml get secrets -n kube-system
+```
+
+**Expected Output**:
+- Automatic token should show expiration timestamp (typically 1 hour)
+- Manual token should show "No expiration" or much longer expiration
+- Creation command should fail with `Forbidden` error
+- Secrets access should fail with `Forbidden` error
 
 ## Expected Results
-- A `ServiceAccount` named `monitoring-sa` exists in the `app-prod` namespace.
-- A `Role` named `pod-reader-role` exists, granting read-only access to pods and logs.
-- A `RoleBinding` connects the Service Account to the Role.
-- A new `monitoring-kubeconfig.yaml` file is created that allows authentication as the Service Account.
-- The new Kubeconfig successfully grants read-only access to the `app-prod` namespace but denies all other requests.
+
+After completing all tasks, you should have:
+
+1. **Monitoring Infrastructure**: 
+   - `pod-monitor` deployment running with automatic ServiceAccount authentication
+   - `test-app` pod providing monitoring target
+
+2. **RBAC Configuration**:
+   - ClusterRole with cross-namespace read permissions
+   - ClusterRoleBinding connecting ServiceAccount to permissions
+
+3. **Authentication Methods**:
+   - Automatic token mounting working inside pod
+   - Manual token available for external access via kubeconfig
+
+4. **Security Validation**:
+   - Read permissions working across namespaces
+   - Write permissions properly denied
+   - Unauthorized namespace access blocked
 
 ## Key Learning Points
-- **Service Accounts for Applications**: Service Accounts are the standard, most secure way to grant in-cluster or external applications access to the Kubernetes API.
-- **Principle of Least Privilege**: Always create roles with the absolute minimum permissions required. Avoid using cluster-wide roles (`ClusterRole`) when a namespaced `Role` will suffice.
-- **Manual Token Generation**: While tokens are mounted automatically into pods, you often need to generate them manually for external tools. Creating a dedicated `Secret` of type `kubernetes.io/service-account-token` is the standard way to do this.
-- **Kubeconfig from Scratch**: Understanding the structure of a Kubeconfig file (`clusters`, `contexts`, `users`) is a critical skill that allows you to construct access credentials for any scenario.
+
+- **Automatic vs Manual Tokens**: Automatic tokens (projected volumes) are short-lived and more secure, while manual tokens (secrets) are longer-lived but less secure
+- **Token Lifecycle**: Modern Kubernetes rotates automatic tokens, while manual tokens require manual rotation
+- **Cross-Namespace Authentication**: ServiceAccounts can access multiple namespaces when bound to ClusterRoles
+- **ServiceAccount Format**: API server recognizes ServiceAccounts as `system:serviceaccount:namespace:name`
+- **Security Best Practices**: Use automatic tokens for in-cluster applications, manual tokens only when necessary for external access
+- **Token Projection**: Modern Kubernetes mounts tokens as projected volumes with audience and expiration controls
 
 ## Exam & Troubleshooting Tips
-- **Exam Tip**: Be fast with `kubectl create serviceaccount`, `kubectl create role`, and `kubectl create rolebinding`. Imperative commands are much quicker than writing YAML from scratch.
-- **Troubleshooting**: If you get a `Forbidden` error, use `kubectl auth can-i <verb> <resource> --as=system:serviceaccount:<namespace>:<sa-name> -n <namespace>` to test permissions directly on the server, which helps isolate whether the issue is with RBAC rules or the Kubeconfig file itself.
-- **Token Expiration**: Be aware that tokens can have expiration dates. For long-lived access, ensure your token generation process accounts for this. The manual secret creation method used here typically creates a non-expiring token, but this behavior can be configured by cluster administrators.
-- **Common Mistake**: Forgetting the `system:serviceaccount:` prefix when specifying a Service Account in a `can-i` check or other manual validation steps.
+
+### Real Exam Tips
+- **Fast ServiceAccount Creation**: Use `kubectl create serviceaccount` for speed
+- **RBAC Testing**: Always use `kubectl auth can-i` to verify permissions before deploying applications
+- **Token Location**: Automatic tokens are always at `/var/run/secrets/kubernetes.io/serviceaccount/token`
+- **External Access**: Manual token creation requires Secret of type `kubernetes.io/service-account-token`
+- **Cross-Namespace Access**: Requires ClusterRole and ClusterRoleBinding, not Role and RoleBinding
+
+### Common Troubleshooting Issues
+- **403 Forbidden Errors**: Check RBAC bindings and verify ServiceAccount has correct permissions
+- **Token Not Found**: Ensure ServiceAccount exists and automatic mounting is not disabled
+- **Kubeconfig Issues**: Verify CA certificate, server URL, and token are correctly extracted
+- **Cross-Namespace Access**: Confirm ClusterRoleBinding exists and references correct ServiceAccount
+- **Token Expiration**: Automatic tokens expire, manual tokens from secrets typically don't (unless configured)
+- **ServiceAccount Mounting**: Some pods disable automatic mounting via `automountServiceAccountToken: false`

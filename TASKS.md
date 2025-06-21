@@ -218,17 +218,15 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Permission escalation prevention
   - RBAC best practices and security considerations
   - Environment: k3s bare metal
-
-## Pending Tasks ⏳
-
-### Security/Authorization
-- [ ] **Authorization Troubleshooting**: `03-authorization-troubleshooting.md`
+- [x] **Authorization Troubleshooting**: `03-authorization-troubleshooting.md`
   - kubectl auth can-i permission testing
   - RBAC decision flow and debugging
   - Common authorization failures and solutions
-  - Audit logs for authorization events
+  - ServiceAccount impersonation and testing
   - Permission debugging workflows
   - Environment: k3s bare metal
+
+## Pending Tasks ⏳
 
 ### Security/AdmissionControl
 - [ ] **Directory Structure**: Create `Security/AdmissionControl/` folder structure
