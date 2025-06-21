@@ -211,12 +211,36 @@ kubectl get configmap coredns -n kube-system -o yaml
 kubectl get configmap coredns -n kube-system -o yaml > coredns-backup.yaml
 
 # Step 2: Create updated Corefile
-kubectl patch configmap coredns -n kube-system --type merge -p='
-{
-  "data": {
-    "Corefile": ".:53 {\n    errors\n    health {\n        lameduck 5s\n    }\n    ready\n    kubernetes cluster.local in-addr.arpa ip6.arpa {\n        pods insecure\n        fallthrough in-addr.arpa ip6.arpa\n        ttl 30\n    }\n    prometheus :9153\n    forward company.local 192.168.1.10\n    forward dev.local 10.0.0.5\n    forward prod.local 10.0.0.6\n    forward . 8.8.8.8 8.8.4.4\n    cache 30\n    loop\n    reload\n    loadbalance\n}"
-  }
-}'
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward company.local 192.168.1.10
+        forward dev.local 10.0.0.5
+        forward prod.local 10.0.0.6
+        forward . 8.8.8.8 8.8.4.4
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+EOF
 
 # Step 3: Restart CoreDNS
 kubectl rollout restart deployment/coredns -n kube-system
@@ -226,12 +250,37 @@ kubectl rollout status deployment/coredns -n kube-system
 ### Task 3 Solution: Implement CoreDNS Plugin Configuration
 ```bash
 # Update ConfigMap with enhanced plugins
-kubectl patch configmap coredns -n kube-system --type merge -p='
-{
-  "data": {
-    "Corefile": ".:53 {\n    log\n    errors\n    health {\n        lameduck 5s\n    }\n    ready\n    kubernetes cluster.local in-addr.arpa ip6.arpa {\n        pods insecure\n        fallthrough in-addr.arpa ip6.arpa\n        ttl 30\n    }\n    prometheus :9153\n    forward company.local 192.168.1.10\n    forward dev.local 10.0.0.5\n    forward prod.local 10.0.0.6\n    forward . 8.8.8.8 8.8.4.4\n    cache 60\n    loop\n    reload\n    loadbalance\n}"
-  }
-}'
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        log
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward company.local 192.168.1.10
+        forward dev.local 10.0.0.5
+        forward prod.local 10.0.0.6
+        forward . 8.8.8.8 8.8.4.4
+        cache 60
+        loop
+        reload
+        loadbalance
+    }
+EOF
 
 # Restart to apply changes
 kubectl rollout restart deployment/coredns -n kube-system
@@ -240,12 +289,46 @@ kubectl rollout restart deployment/coredns -n kube-system
 ### Task 4 Solution: Create Custom DNS Records with Hosts Plugin
 ```bash
 # Add hosts plugin to Corefile
-kubectl patch configmap coredns -n kube-system --type merge -p='
-{
-  "data": {
-    "Corefile": ".:53 {\n    log\n    errors\n    health {\n        lameduck 5s\n    }\n    ready\n    hosts {\n        10.0.1.100 api.internal\n        10.0.1.200 db.internal\n        10.0.1.150 cache.internal\n        10.0.2.1 *.dev.internal\n        ttl 300\n        reload 10s\n        fallthrough\n    }\n    kubernetes cluster.local in-addr.arpa ip6.arpa {\n        pods insecure\n        fallthrough in-addr.arpa ip6.arpa\n        ttl 30\n    }\n    prometheus :9153\n    forward company.local 192.168.1.10\n    forward dev.local 10.0.0.5\n    forward prod.local 10.0.0.6\n    forward . 8.8.8.8 8.8.4.4\n    cache 60\n    loop\n    reload\n    loadbalance\n}"
-  }
-}'
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        log
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        hosts {
+            10.0.1.100 api.internal
+            10.0.1.200 db.internal
+            10.0.1.150 cache.internal
+            10.0.2.1 *.dev.internal
+            ttl 300
+            reload 10s
+            fallthrough
+        }
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward company.local 192.168.1.10
+        forward dev.local 10.0.0.5
+        forward prod.local 10.0.0.6
+        forward . 8.8.8.8 8.8.4.4
+        cache 60
+        loop
+        reload
+        loadbalance
+    }
+EOF
 
 # Restart CoreDNS
 kubectl rollout restart deployment/coredns -n kube-system
