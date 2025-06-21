@@ -1,183 +1,329 @@
 # Certificate-based Authentication
 
 ## Scenario Overview
-- **Time Limit**: 25 minutes
+- **Time Limit**: 35 minutes
 - **Difficulty**: Advanced
 - **Environment**: k3s bare metal
 
 ## Objective
-Learn how to create a new user, generate a client certificate, have it signed by the Kubernetes CA, and configure RBAC rules to grant the user specific permissions.
+Implement secure certificate-based authentication for a developer user, including certificate lifecycle management and proper RBAC configuration.
 
 ## Context
-A new developer, "dev-user," has joined the team. As the Kubernetes administrator, you need to grant them access to the `dev-namespace`. For security, your company policy requires using individual, short-lived client certificates for all human users. Your task is to create the user credentials, get the certificate signed, and set up the correct permissions for them to work in their designated namespace.
+Your organization has implemented a zero-trust security model requiring individual client certificates for all human users accessing Kubernetes. A new developer, "dev-user," needs access to work on applications in a dedicated namespace. You must create their authentication credentials, implement proper certificate lifecycle management, and configure least-privilege access using RBAC. Additionally, you need to demonstrate certificate rotation procedures to ensure ongoing security compliance.
 
 ## Prerequisites
-- A running Kubernetes cluster (k3s is recommended).
-- `kubectl` installed and configured with administrative access.
-- `openssl` installed for certificate generation.
+- A running Kubernetes cluster (k3s is recommended)
+- `kubectl` installed and configured with administrative access
+- `openssl` installed for certificate generation
+- Basic understanding of X.509 certificates and PKI concepts
 
 ## Tasks
 
-### Task 1: Create a Namespace and a New User's Credentials
-*Suggested Time: 5 minutes*
+### Task 1: Create Initial Environment and Generate User Credentials
+*Suggested Time: 8 minutes*
 
-First, create the developer's namespace and generate their private key and Certificate Signing Request (CSR).
+Set up the development environment and generate the cryptographic materials needed for certificate-based authentication.
 
-1.  **Create a new namespace** called `dev-namespace`.
-    ```bash
-    kubectl create namespace dev-namespace
-    ```
+1. **Create a namespace** called **dev-namespace** for the developer's work.
 
-2.  **Generate a private key** for `dev-user`.
-    ```bash
-    openssl genrsa -out dev-user.key 2048
-    ```
+2. **Generate a private key** for **dev-user** using RSA with **2048-bit** key length. Save this as **dev-user.key**.
 
-3.  **Create a CSR**. The Common Name (`CN`) will be the username (`dev-user`), and the Organization (`O`) will be the group (`developers`).
-    ```bash
-    openssl req -new -key dev-user.key -out dev-user.csr -subj "/CN=dev-user/O=developers"
-    ```
+3. **Create a Certificate Signing Request (CSR)** with the following specifications:
+   - Common Name (CN): **dev-user** (this becomes the username)
+   - Organization (O): **developers** (this becomes the group membership)
+   - Save the CSR as **dev-user.csr**
 
-### Task 2: Get the Certificate Signed by the Kubernetes CA
+**Hint**: Use `openssl` commands for key generation and CSR creation. The CSR should be non-interactive using the `-subj` parameter.
+
+### Task 2: Submit Certificate Signing Request to Kubernetes
 *Suggested Time: 10 minutes*
 
-Submit the CSR to the Kubernetes API to have it signed by the cluster's built-in Certificate Authority.
+Use the Kubernetes Certificate API to get the user's certificate signed by the cluster's Certificate Authority.
 
-1.  **Create a `CertificateSigningRequest` manifest** named `dev-user-csr.yaml`.
-    - **Hint**: The request data must be base64-encoded.
-    ```yaml
-    apiVersion: certificates.k8s.io/v1
-    kind: CertificateSigningRequest
-    metadata:
-      name: dev-user-csr
-    spec:
-      request: $(cat dev-user.csr | base64 | tr -d '\n')
-      signerName: kubernetes.io/kube-apiserver-client
-      expirationSeconds: 86400 # 24 hours
-      usages:
-      - client auth
-    ```
+1. **Create a Kubernetes manifest** file named **dev-user-csr.yaml** containing a `CertificateSigningRequest` resource with these specifications:
+   - Name: **dev-user-csr**
+   - Request data: Base64-encoded content of the CSR file (with no newlines)
+   - Signer: **kubernetes.io/kube-apiserver-client**
+   - Expiration: **86400 seconds** (24 hours)
+   - Usage: **client auth**
 
-2.  **Apply the manifest** to create the CSR object.
-    ```bash
-    kubectl apply -f dev-user-csr.yaml
-    ```
+2. **Apply the manifest** to create the CSR object in the cluster.
 
-3.  **Approve the CSR**.
-    ```bash
-    kubectl certificate approve dev-user-csr
-    ```
+3. **Approve the certificate signing request** using kubectl.
 
-4.  **Retrieve the signed certificate** and save it to a file.
-    ```bash
-    kubectl get csr dev-user-csr -o jsonpath='{.status.certificate}' | base64 --decode > dev-user.crt
-    ```
+4. **Extract the signed certificate** from the CSR status and save it as **dev-user.crt**.
 
-### Task 3: Create a Kubeconfig File for the New User
+**Hint**: Use `cat dev-user.csr | base64 | tr -d '\n'` to properly encode the CSR data for the manifest.
+
+### Task 3: Create User Kubeconfig
+*Suggested Time: 7 minutes*
+
+Create a dedicated kubeconfig file that the developer can use to authenticate with their certificate.
+
+1. **Create a kubeconfig file** named **dev-user-kubeconfig.yaml** with the following configuration:
+   - Cluster name: Use the current cluster name from your admin kubeconfig
+   - Server URL: Extract from your current kubeconfig
+   - Certificate Authority data: Extract from your current kubeconfig
+   - User credentials: Use the generated private key and signed certificate
+   - Default namespace: **dev-namespace**
+   - Context name: **dev-context**
+
+2. **Set the default context** to **dev-context** in the new kubeconfig file.
+
+**Hint**: Use `kubectl config view` commands to extract cluster information, then use `kubectl config --kubeconfig=` commands to build the new config file.
+
+### Task 4: Configure RBAC Permissions
+*Suggested Time: 7 minutes*
+
+Grant the developer appropriate permissions to work within their namespace using Kubernetes RBAC.
+
+1. **Create a Role** named **dev-role** in the **dev-namespace** with permissions for:
+   - API groups: **""** (core) and **"apps"**
+   - Resources: **deployments**, **services**, **pods**, **configmaps**, **secrets**
+   - Verbs: **get**, **list**, **create**, **update**, **patch**, **delete**
+
+2. **Create a RoleBinding** named **dev-binding** that grants the **dev-role** to the **developers** group in the **dev-namespace**.
+
+**Hint**: Create the Role as a YAML manifest, then use kubectl commands for the RoleBinding.
+
+### Task 5: Test Authentication and Authorization
+*Suggested Time: 8 minutes*
+
+Verify that the certificate-based authentication works correctly and that RBAC permissions are properly configured.
+
+1. **Test successful operations** using the dev-user kubeconfig:
+   - List pods in **dev-namespace**
+   - Create a deployment named **test-app** using image **nginx:alpine** in **dev-namespace**
+   - Create a ConfigMap named **app-config** with key **env** and value **development**
+
+2. **Test authorization boundaries** by attempting operations that should fail:
+   - List pods in the **default** namespace
+   - Create resources in the **kube-system** namespace
+   - List nodes (cluster-wide resource)
+
+3. **Verify certificate expiration** by checking the certificate's validity period.
+
+**Hint**: Use `--kubeconfig=dev-user-kubeconfig.yaml` flag with kubectl commands to test as the dev-user.
+
+### Task 6: Implement Certificate Rotation
 *Suggested Time: 5 minutes*
 
-With the signed certificate, create a dedicated Kubeconfig file for `dev-user`.
+Demonstrate certificate lifecycle management by rotating the user's certificate.
 
-1.  **Use `kubectl config`** to create a new Kubeconfig file named `dev-user-kubeconfig.yaml`.
-    - **Hint**: You'll need the server URL and CA data from your admin Kubeconfig.
-    ```bash
-    # Get cluster info from your current config
-    SERVER_URL=$(kubectl config view -o jsonpath='{.clusters[?(@.name=="default")].cluster.server}')
-    CA_CERT_DATA=$(kubectl config view --raw -o jsonpath='{.clusters[?(@.name=="default")].cluster.certificate-authority-data}')
+1. **Generate a new private key** and CSR for **dev-user** with a **12-hour expiration**.
 
-    # Create the Kubeconfig
-    kubectl config --kubeconfig=dev-user-kubeconfig.yaml set-cluster default --server="$SERVER_URL" --certificate-authority-data="$CA_CERT_DATA" --embed-certs=true
-    kubectl config --kubeconfig=dev-user-kubeconfig.yaml set-credentials dev-user --client-certificate=dev-user.crt --client-key=dev-user.key --embed-certs=true
-    kubectl config --kubeconfig=dev-user-kubeconfig.yaml set-context dev-context --cluster=default --user=dev-user --namespace=dev-namespace
-    kubectl config --kubeconfig=dev-user-kubeconfig.yaml use-context dev-context
-    ```
+2. **Create and approve a new CSR** following the same process as Task 2, but name it **dev-user-csr-rotated**.
 
-### Task 4: Grant Permissions with RBAC
-*Suggested Time: 5 minutes*
+3. **Update the kubeconfig file** to use the new certificate while keeping the same private key.
 
-Currently, `dev-user` can authenticate but has no permissions. Create a `Role` and `RoleBinding` to grant them the ability to manage deployments and services in `dev-namespace`.
+4. **Verify the rotation** by confirming the user can still access resources with the updated certificate.
 
-1.  **Create a `Role`** named `dev-role` in `dev-namespace` that allows full access to `deployments`, `services`, and `pods`.
-    - Create a file named `dev-role.yaml`:
-      ```yaml
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: Role
-      metadata:
-        name: dev-role
-        namespace: dev-namespace
-      rules:
-      - apiGroups: ["", "apps"]
-        resources: ["deployments", "services", "pods"]
-        verbs: ["*"]
-      ```
-    - Apply the manifest:
-      ```bash
-      kubectl apply -f dev-role.yaml
-      ```
-
-2.  **Create a `RoleBinding`** to grant the `dev-role` to the `developers` group.
-    ```bash
-    kubectl create rolebinding dev-rb --role=dev-role --group=developers -n dev-namespace
-    ```
-
-### Task 5: Verify Access
-*Suggested Time: 5 minutes*
-
-Test that `dev-user` has the correct permissions.
-
-1.  **As `dev-user`**, try to create a deployment in `dev-namespace`. This should **succeed**.
-    ```bash
-    kubectl --kubeconfig=dev-user-kubeconfig.yaml create deployment nginx --image=nginx
-    ```
-
-2.  **As `dev-user`**, try to list pods in the `default` namespace. This should **fail**.
-    ```bash
-    kubectl --kubeconfig=dev-user-kubeconfig.yaml get pods -n default
-    ```
+**Hint**: You can update credentials in an existing kubeconfig using `kubectl config set-credentials`.
 
 ## Verification Commands
 
-### Task 2: Certificate Signing
-- **Check CSR status**:
+### Task 1: Environment and Credentials
+- **Verify namespace creation**:
   ```bash
-  kubectl get csr dev-user-csr
+  kubectl get namespace dev-namespace
   ```
-  - **Expected Output**: The status should show `Approved,Issued`.
+  - **Expected Output**: `dev-namespace   Active   <age>`
 
-### Task 4: RBAC
-- **Check the RoleBinding**:
+- **Verify private key generation**:
   ```bash
-  kubectl get rolebinding dev-rb -n dev-namespace -o yaml
+  ls -la dev-user.key
   ```
-  - **Expected Output**: The `subjects` section should show the `developers` group.
+  - **Expected Output**: File should exist with permissions `-rw-------` (600)
 
-### Task 5: Access Verification
-- **Successful command**:
+- **Verify CSR content**:
   ```bash
-  kubectl --kubeconfig=dev-user-kubeconfig.yaml get deployments -n dev-namespace
+  openssl req -in dev-user.csr -text -noout | grep -E "Subject:|Signature Algorithm"
   ```
-  - **Expected Output**: The `nginx` deployment should be listed.
-- **Failed command**:
+  - **Expected Output**: Subject should contain `CN = dev-user, O = developers`
+
+### Task 2: Certificate Signing Request
+- **Check CSR object creation**:
+  ```bash
+  kubectl get csr dev-user-csr -o wide
+  ```
+  - **Expected Output**: CSR should show `Approved,Issued` status
+
+- **Verify certificate extraction**:
+  ```bash
+  openssl x509 -in dev-user.crt -text -noout | grep -E "Subject:|Issuer:|Not After"
+  ```
+  - **Expected Output**: Subject should be `CN = dev-user, O = developers`, Issuer should contain `kubernetes`
+
+- **Check certificate validity period**:
+  ```bash
+  openssl x509 -in dev-user.crt -noout -dates
+  ```
+  - **Expected Output**: Certificate should be valid for 24 hours from creation time
+
+### Task 3: Kubeconfig Creation
+- **Verify kubeconfig file structure**:
+  ```bash
+  kubectl config --kubeconfig=dev-user-kubeconfig.yaml view
+  ```
+  - **Expected Output**: Should show cluster, user `dev-user`, and context `dev-context`
+
+- **Check current context**:
+  ```bash
+  kubectl config --kubeconfig=dev-user-kubeconfig.yaml current-context
+  ```
+  - **Expected Output**: `dev-context`
+
+- **Verify default namespace**:
+  ```bash
+  kubectl config --kubeconfig=dev-user-kubeconfig.yaml view -o jsonpath='{.contexts[?(@.name=="dev-context")].context.namespace}'
+  ```
+  - **Expected Output**: `dev-namespace`
+
+### Task 4: RBAC Configuration
+- **Check Role creation**:
+  ```bash
+  kubectl get role dev-role -n dev-namespace -o yaml
+  ```
+  - **Expected Output**: Should show rules for deployments, services, pods, configmaps, secrets with specified verbs
+
+- **Verify RoleBinding**:
+  ```bash
+  kubectl get rolebinding dev-binding -n dev-namespace -o jsonpath='{.subjects[0].name}'
+  ```
+  - **Expected Output**: `developers`
+
+- **Check effective permissions**:
+  ```bash
+  kubectl auth can-i --as=dev-user --as-group=developers create deployments -n dev-namespace
+  ```
+  - **Expected Output**: `yes`
+
+### Task 5: Authentication and Authorization Testing
+- **Verify successful pod listing**:
+  ```bash
+  kubectl --kubeconfig=dev-user-kubeconfig.yaml get pods -n dev-namespace
+  ```
+  - **Expected Output**: Should list pods without permission errors
+
+- **Check deployment creation**:
+  ```bash
+  kubectl --kubeconfig=dev-user-kubeconfig.yaml get deployment test-app -n dev-namespace
+  ```
+  - **Expected Output**: Should show the `test-app` deployment with `nginx:alpine` image
+
+- **Verify ConfigMap creation**:
+  ```bash
+  kubectl --kubeconfig=dev-user-kubeconfig.yaml get configmap app-config -n dev-namespace -o jsonpath='{.data.env}'
+  ```
+  - **Expected Output**: `development`
+
+- **Test authorization boundary - default namespace**:
   ```bash
   kubectl --kubeconfig=dev-user-kubeconfig.yaml get pods -n default
   ```
-  - **Expected Output**: An error message: `Error from server (Forbidden): pods is forbidden: User "dev-user" cannot list resource "pods" in API group "" in the namespace "default"`.
+  - **Expected Output**: `Error from server (Forbidden): pods is forbidden: User "dev-user" cannot list resource "pods" in API group "" in the namespace "default"`
+
+- **Test authorization boundary - cluster resources**:
+  ```bash
+  kubectl --kubeconfig=dev-user-kubeconfig.yaml get nodes
+  ```
+  - **Expected Output**: `Error from server (Forbidden): nodes is forbidden: User "dev-user" cannot list resource "nodes" in API group "" at the cluster scope`
+
+### Task 6: Certificate Rotation
+- **Verify new CSR creation**:
+  ```bash
+  kubectl get csr dev-user-csr-rotated -o wide
+  ```
+  - **Expected Output**: Should show `Approved,Issued` status
+
+- **Check certificate expiration difference**:
+  ```bash
+  openssl x509 -in dev-user.crt -noout -dates | grep "Not After" && openssl x509 -in dev-user-rotated.crt -noout -dates | grep "Not After"
+  ```
+  - **Expected Output**: New certificate should have a 12-hour validity period
+
+- **Verify kubeconfig update**:
+  ```bash
+  kubectl --kubeconfig=dev-user-kubeconfig.yaml get pods -n dev-namespace
+  ```
+  - **Expected Output**: Should work with rotated certificate without errors
 
 ## Expected Results
-- A new user `dev-user` is created, belonging to the `developers` group.
-- A signed client certificate (`dev-user.crt`) is generated for the user.
-- A dedicated Kubeconfig file (`dev-user-kubeconfig.yaml`) is created for the user.
-- The `dev-user` has full permissions on `deployments`, `services`, and `pods` within the `dev-namespace` only.
-- The user cannot access any resources outside of their designated namespace.
+- **Namespace**: `dev-namespace` created and ready for development work
+- **User Identity**: `dev-user` with group membership in `developers` established through X.509 certificate
+- **Certificates**: 
+  - Initial certificate with 24-hour expiration (`dev-user.crt`)
+  - Rotated certificate with 12-hour expiration (`dev-user-rotated.crt`)
+- **Authentication**: Dedicated kubeconfig file (`dev-user-kubeconfig.yaml`) with embedded certificates
+- **Authorization**: RBAC Role (`dev-role`) and RoleBinding (`dev-binding`) providing namespace-scoped permissions
+- **Security Boundaries**: User access restricted to `dev-namespace` only, with verified denial of access to other namespaces and cluster resources
+- **Workload Testing**: Successful deployment of test applications and configuration resources using user credentials
 
 ## Key Learning Points
-- **User vs. Service Account**: Kubernetes does not have a "user" object. A user is simply an identity defined by a private key and a signed certificate. The username (`CN`) and group (`O`) are embedded in the certificate's subject.
-- **CSR API**: The `certificates.k8s.io` API provides a standardized way to request and receive signed certificates from the cluster's CA, enabling a secure certificate lifecycle.
-- **`expirationSeconds`**: Setting an expiration on certificates is a critical security best practice. It forces periodic credential rotation, reducing the risk of a compromised key.
-- **Group-based RBAC**: Binding roles to groups (`O` field in the certificate) instead of individual users (`CN` field) is a more scalable and manageable approach to RBAC.
+- **X.509 Certificate Identity**: Kubernetes users are defined by X.509 certificates where the Common Name (CN) becomes the username and Organization (O) field defines group membership
+- **Certificate Signing Request API**: The `certificates.k8s.io/v1` API provides a secure, auditable way to request certificates from the cluster's Certificate Authority
+- **Certificate Lifecycle Management**: Short-lived certificates with automatic rotation improve security posture by limiting exposure from compromised credentials
+- **Group-based RBAC**: Assigning roles to groups rather than individual users enables scalable permission management and easier onboarding/offboarding
+- **Least Privilege Principle**: Namespace-scoped roles limit blast radius and enforce proper resource isolation
+- **kubeconfig Security**: Embedding certificates in kubeconfig files provides portable authentication while maintaining security through proper file permissions
+- **Authentication vs Authorization**: Certificate-based authentication establishes identity, while RBAC controls what authenticated users can do
+- **Certificate Expiration**: Short certificate lifespans (24 hours or less) are production security best practices that force regular credential rotation
+
+## Production Security Considerations
+- **Private Key Storage**: In production, private keys should be stored in secure key management systems (e.g., HashiCorp Vault, AWS KMS)
+- **Certificate Distribution**: Use secure channels for distributing certificates and kubeconfig files to users
+- **Audit Logging**: Monitor certificate issuance and authentication events through Kubernetes audit logs
+- **Automated Rotation**: Implement automated certificate rotation using tools like cert-manager or custom controllers
+- **Emergency Revocation**: Plan for certificate revocation procedures in case of compromise
 
 ## Exam & Troubleshooting Tips
-- **Exam Tip**: Be very quick with `openssl` commands for generating keys and CSRs. The exam is time-pressured, and fumbling with `openssl` syntax can cost you valuable minutes.
-- **Troubleshooting**: If a user with a valid certificate gets a `Forbidden` error, the problem is almost always with RBAC. Use `kubectl describe rolebinding <name>` and `kubectl describe role <name>` to carefully check that the user/group, resources, and verbs are all correct.
-- **CSR Not Found**: If `kubectl get csr` doesn't show your CSR, make sure you applied the YAML manifest correctly and are in the correct context.
-- **Certificate Not Issued**: If a CSR is `Approved` but not `Issued`, check the logs of the `kube-controller-manager` pod, as it is responsible for signing certificates.
+
+### CKA Exam Tips
+- **Time Management**: Practice `openssl` commands until they're muscle memory - the exam is time-pressured
+- **Common Commands**: Memorize the CSR base64 encoding pattern: `cat file.csr | base64 | tr -d '\n'`
+- **kubeconfig Shortcuts**: Use `kubectl config --kubeconfig=` pattern for testing user access quickly
+- **RBAC Testing**: Use `kubectl auth can-i` to verify permissions before testing with actual user credentials
+
+### Troubleshooting Common Issues
+
+#### Authentication Problems
+- **Certificate Validation Errors**: 
+  - Check certificate validity dates with `openssl x509 -in cert.crt -noout -dates`
+  - Verify certificate subject matches expected username/groups
+  - Ensure certificate is properly signed by cluster CA
+- **kubeconfig Issues**: 
+  - Verify cluster server URL and CA data match admin kubeconfig
+  - Check that certificate and key are properly embedded or referenced
+  - Confirm context and namespace settings
+
+#### Authorization Problems
+- **Forbidden Errors**: 
+  - Use `kubectl describe role` and `kubectl describe rolebinding` to verify RBAC configuration
+  - Check that group names in certificate match RoleBinding subjects
+  - Verify API groups, resources, and verbs are correctly specified
+- **Permission Debugging**: 
+  - Use `kubectl auth can-i --as=username --as-group=groupname` to test permissions
+  - Check effective permissions with `kubectl auth can-i --list --as=username`
+
+#### Certificate Signing Request Issues
+- **CSR Not Found**: Verify the YAML manifest was applied correctly and CSR object exists
+- **CSR Not Approved**: Check if automatic approval is enabled or manually approve with `kubectl certificate approve`
+- **Certificate Not Issued**: 
+  - Check `kube-controller-manager` logs for signing errors
+  - Verify the signer name matches cluster capabilities
+  - Ensure CSR has proper usage specifications
+
+#### k3s Specific Issues
+- **Cluster Name**: k3s typically uses `default` as cluster name, not `kubernetes`
+- **CA Certificate**: k3s CA certificate location is `/var/lib/rancher/k3s/server/tls/server-ca.crt`
+- **Server URL**: Default k3s server URL is `https://127.0.0.1:6443` for local clusters
+
+### Security Best Practices Checklist
+- [ ] Use strong private keys (minimum 2048-bit RSA)
+- [ ] Set appropriate certificate expiration times (24 hours or less)
+- [ ] Implement proper file permissions (600) for private keys
+- [ ] Use group-based RBAC for scalability
+- [ ] Apply least privilege principle to role definitions
+- [ ] Monitor certificate expiration and automate rotation
+- [ ] Audit authentication and authorization events
+- [ ] Secure distribution of kubeconfig files
