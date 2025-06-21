@@ -321,6 +321,31 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [ ] Network policies
 - [ ] DNS and service discovery
 
+### Services/DNS
+- [x] **Directory Structure**: Created `Services/DNS/` folder structure
+- [x] **CoreDNS Configuration and Management**: `01-coredns-configuration-management.md`
+  - CoreDNS deployment architecture and components
+  - ConfigMap customization and Corefile configuration
+  - Upstream DNS forwarding (8.8.8.8, custom nameservers)
+  - Plugin configuration (errors, health, kubernetes, forward, cache)
+  - CoreDNS scaling and resource management
+  - Environment: k3s bare metal
+- [ ] **DNS Service Discovery and Resolution**: `02-dns-service-discovery-resolution.md`
+  - Service DNS naming conventions (my-svc.my-namespace.svc.cluster.local)
+  - Cross-namespace service resolution patterns
+  - Headless services and pod DNS records
+  - DNS policies (Default, ClusterFirst, ClusterFirstWithHostNet, None)
+  - Custom DNS configuration with dnsConfig
+  - Environment: k3s bare metal
+- [ ] **DNS Troubleshooting and Debugging**: `03-dns-troubleshooting-debugging.md`
+  - DNS resolution failure diagnosis and repair
+  - CoreDNS pod status and log analysis
+  - nslookup and dig testing from pods
+  - /etc/resolv.conf validation and configuration
+  - DNS loop detection and resolution
+  - Common DNS issues (systemd-resolved conflicts, search domain limits)
+  - Environment: k3s bare metal
+
 ### Workloads & Scheduling (15%)
 - [ ] Pod scheduling and affinity rules
 - [ ] Resource limits and requests
