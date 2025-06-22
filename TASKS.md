@@ -261,7 +261,6 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Namespace-based network isolation
   - External traffic control and internet access
   - Network policy troubleshooting and debugging
-  - Service mesh integration considerations
   - Environment: k3s bare metal with Calico CNI
 
 ### Security/TLSAndCertificates

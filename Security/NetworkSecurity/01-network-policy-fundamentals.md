@@ -201,190 +201,51 @@ Verify that all pods can communicate with each other before implementing Network
 
 Create restrictive Network Policies that deny all traffic by default, following security best practices.
 
-3a. Create a default deny ingress policy for the frontend namespace:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-ingress
-  namespace: frontend
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-```
+3a. Create a default deny ingress policy for the **frontend** namespace that applies to all pods and blocks all incoming traffic.
 
-3b. Create a default deny all traffic policy for the backend namespace:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-all
-  namespace: backend
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-  - Egress
-```
+**Hint**: Use an empty `podSelector: {}` to target all pods in the namespace.
 
-3c. Create a default deny ingress policy for the database namespace:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-ingress
-  namespace: database
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-```
+3b. Create a default deny all traffic policy for the **backend** namespace that applies to all pods and blocks both incoming and outgoing traffic.
+
+**Hint**: Include both `Ingress` and `Egress` in the `policyTypes` array.
+
+3c. Create a default deny ingress policy for the **database** namespace that applies to all pods and blocks all incoming traffic.
+
+**Hint**: Similar to the frontend policy, but deployed in the database namespace.
 
 ### Task 4: Configure Selective Ingress Traffic Rules
 **Time**: 12 minutes
 
 Implement targeted ingress policies that allow specific traffic flows required for application functionality.
 
-4a. Create a policy allowing frontend pods to receive HTTP traffic from any source:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-frontend-ingress
-  namespace: frontend
-spec:
-  podSelector:
-    matchLabels:
-      app: web-app
-  policyTypes:
-  - Ingress
-  ingress:
-  - ports:
-    - protocol: TCP
-      port: 80
-```
+4a. Create a policy in the **frontend** namespace allowing pods with label `app: web-app` to receive HTTP traffic on port 80 from any source.
 
-4b. Create a policy allowing backend pods to receive traffic only from frontend namespace:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-backend-from-frontend
-  namespace: backend
-spec:
-  podSelector:
-    matchLabels:
-      app: api-server
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          tier: frontend
-    ports:
-    - protocol: TCP
-      port: 80
-```
+**Hint**: Use `podSelector` with `matchLabels` to target specific pods, and leave the `from` field empty to allow from anywhere.
 
-4c. Create a policy allowing database pods to receive traffic only from backend pods using both namespace and pod selectors:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-db-from-backend
-  namespace: database
-spec:
-  podSelector:
-    matchLabels:
-      app: postgres-db
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          tier: backend
-      podSelector:
-        matchLabels:
-          app: api-server
-    ports:
-    - protocol: TCP
-      port: 5432
-```
+4b. Create a policy in the **backend** namespace allowing pods with label `app: api-server` to receive traffic on port 80 only from pods in the namespace labeled `tier: frontend`.
+
+**Hint**: Use `namespaceSelector` with `matchLabels` in the `from` section to restrict traffic by source namespace.
+
+4c. Create a policy in the **database** namespace allowing pods with label `app: postgres-db` to receive traffic on port 5432 only from pods with label `app: api-server` in the namespace labeled `tier: backend`.
+
+**Hint**: Combine both `namespaceSelector` and `podSelector` in the same `from` entry to match pods with specific labels from specific namespaces.
 
 ### Task 5: Configure Egress Traffic Rules
 **Time**: 10 minutes
 
 Implement egress policies for the backend namespace to control outbound traffic while allowing necessary external connectivity.
 
-5a. Create an egress policy allowing backend pods to communicate with the database:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-backend-to-database
-  namespace: backend
-spec:
-  podSelector:
-    matchLabels:
-      app: api-server
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          tier: database
-    ports:
-    - protocol: TCP
-      port: 5432
-```
+5a. Create an egress policy in the **backend** namespace allowing pods with label `app: api-server` to communicate with the namespace labeled `tier: database` on port 5432.
 
-5b. Create an egress policy allowing backend pods to perform DNS lookups:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-backend-dns
-  namespace: backend
-spec:
-  podSelector:
-    matchLabels:
-      app: api-server
-  policyTypes:
-  - Egress
-  egress:
-  - to: []
-    ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
-```
+**Hint**: Use `policyTypes: [Egress]` and specify the destination namespace in the `to` section.
 
-5c. Create an egress policy allowing backend pods to access external services on specific ports:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-backend-external
-  namespace: backend
-spec:
-  podSelector:
-    matchLabels:
-      app: api-server
-  policyTypes:
-  - Egress
-  egress:
-  - to: []
-    ports:
-    - protocol: TCP
-      port: 80
-    - protocol: TCP
-      port: 443
-```
+5b. Create an egress policy in the **backend** namespace allowing pods with label `app: api-server` to perform DNS lookups on ports 53 (both UDP and TCP) to any destination.
+
+**Hint**: Use `to: []` (empty array) to allow traffic to any destination, and include both UDP and TCP protocols for DNS.
+
+5c. Create an egress policy in the **backend** namespace allowing pods with label `app: api-server` to access external services on ports 80 (HTTP) and 443 (HTTPS).
+
+**Hint**: Similar to DNS policy, use `to: []` to allow external access, but restrict to specific TCP ports.
 
 ## Verification Commands
 
