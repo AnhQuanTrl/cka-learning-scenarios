@@ -248,13 +248,13 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 ## Pending Tasks ⏳
 
 ### Security/NetworkSecurity
-- [ ] **Directory Structure**: Create `Security/NetworkSecurity/` folder structure
-- [ ] **Network Policy Fundamentals**: `01-network-policy-fundamentals.md`
+- [x] **Directory Structure**: Created `Security/NetworkSecurity/` folder structure
+- [x] **Network Policy Fundamentals**: `01-network-policy-fundamentals.md`
   - Ingress and egress network policy rules
   - Pod selector and namespace selector usage
   - Port and protocol-specific traffic control
   - Default deny vs allow policy patterns
-  - Network policy rule precedence and ordering
+  - Multi-tier application with frontend, backend, and database layers
   - Environment: k3s bare metal with Calico CNI
 - [ ] **Advanced Network Isolation**: `02-advanced-network-isolation.md`
   - Multi-tier application network segmentation
