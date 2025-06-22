@@ -52,8 +52,9 @@ Enhance CoreDNS with additional plugins for better observability and performance
 3. Add **ready plugin** with custom endpoint **/ready** for health checks
 4. Configure **cache plugin** with **TTL of 60 seconds** for better performance
 5. Add **reload plugin** for automatic configuration reloading
+6. **Configure multiple cluster domains**: Update kubernetes plugin to serve both **cluster.local** and **cka.local** domains
 
-Test each plugin configuration and verify functionality through appropriate endpoints.
+Test each plugin configuration and verify functionality through appropriate endpoints. Verify that services resolve under both domain suffixes.
 
 ### Task 4: Create Custom DNS Records with Hosts Plugin
 **Time**: 10 minutes
@@ -140,8 +141,12 @@ kubectl run dns-test --image=busybox:latest --restart=Never --rm -it -- time nsl
 
 # Check logs for query logging
 kubectl logs -n kube-system -l k8s-app=kube-dns --tail=10 | grep -i "query"
+
+# Test multiple cluster domain support
+kubectl run dns-test --image=busybox:latest --restart=Never --rm -it -- nslookup kubernetes.default.svc.cluster.local
+kubectl run dns-test --image=busybox:latest --restart=Never --rm -it -- nslookup kubernetes.default.svc.cka.local
 ```
-**Expected Output**: Metrics should be accessible on port 9153. Ready endpoint should return success. Cached queries should be faster on second attempt. Logs should show DNS queries.
+**Expected Output**: Metrics should be accessible on port 9153. Ready endpoint should return success. Cached queries should be faster on second attempt. Logs should show DNS queries. Both cluster.local and cka.local domains should resolve to the same Kubernetes service.
 
 ### Task 4 Verification
 ```bash
@@ -249,7 +254,7 @@ kubectl rollout status deployment/coredns -n kube-system
 
 ### Task 3 Solution: Implement CoreDNS Plugin Configuration
 ```bash
-# Update ConfigMap with enhanced plugins
+# Update ConfigMap with enhanced plugins and multiple cluster domains
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
@@ -265,7 +270,7 @@ data:
             lameduck 5s
         }
         ready
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
+        kubernetes cluster.local cka.local in-addr.arpa ip6.arpa {
             pods insecure
             fallthrough in-addr.arpa ip6.arpa
             ttl 30
@@ -313,7 +318,7 @@ data:
             reload 10s
             fallthrough
         }
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
+        kubernetes cluster.local cka.local in-addr.arpa ip6.arpa {
             pods insecure
             fallthrough in-addr.arpa ip6.arpa
             ttl 30
@@ -396,6 +401,7 @@ kubectl describe deployment coredns -n kube-system
 - Cache plugin significantly improves DNS resolution performance
 - Metrics and logging plugins essential for production observability
 - Resource management and scaling critical for high-availability DNS services
+- Kubernetes plugin supports multiple cluster domains (e.g., cluster.local and cka.local) for enhanced compatibility
 
 ## Exam & Troubleshooting Tips
 - **CKA Exam**: Know how to modify CoreDNS ConfigMap and restart pods safely
