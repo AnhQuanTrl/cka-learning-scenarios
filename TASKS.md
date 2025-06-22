@@ -281,14 +281,14 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: k3s bare metal
 
 ### Security/ControlPlane 
-- [ ] **Directory Structure**: Create `Security/ControlPlane/` folder structure
-- [ ] **etcd Encryption at Rest**: `01-etcd-encryption-at-rest.md`
-  - EncryptionConfiguration resource creation
-  - Encryption provider configuration (AES-CBC, AES-GCM, Secretbox)
-  - API server encryption configuration and restart
-  - Secret encryption verification and key rotation
-  - etcd backup encryption and recovery scenarios
-  - Environment: Killercoda kubeadm cluster
+- [x] **Directory Structure**: Created `Security/ControlPlane/` folder structure
+- [x] **etcd Encryption at Rest**: `01-etcd-encryption-at-rest.md`
+  - EncryptionConfiguration resource with multiple providers (AES-CBC, AES-GCM, identity)
+  - API server encryption configuration and restart procedures
+  - Secret and ConfigMap encryption verification using etcdctl
+  - Encryption key rotation workflow with zero-downtime procedures
+  - Direct etcd access for encryption validation and troubleshooting
+  - Environment: Killercoda Ubuntu Playground with kubeadm cluster
 - [ ] **API Server Security Configuration**: `02-api-server-security-configuration.md`
   - API server secure configuration parameters
   - Authentication and authorization configuration
