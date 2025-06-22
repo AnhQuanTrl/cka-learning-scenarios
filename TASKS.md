@@ -264,20 +264,20 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: k3s bare metal with Calico CNI
 
 ### Security/TLSAndCertificates
-- [ ] **Directory Structure**: Create `Security/TLSAndCertificates/` folder structure
-- [ ] **TLS Configuration and Management**: `01-tls-configuration-management.md`
-  - Cluster TLS certificate management
-  - API server TLS configuration
-  - kubelet TLS bootstrapping
-  - Certificate rotation and renewal
-  - TLS troubleshooting and validation
-  - Environment: k3s bare metal
-- [ ] **Secret Management for TLS**: `02-secret-management-tls.md`
-  - TLS Secret creation and management
-  - Certificate and key storage patterns
-  - Secret rotation for TLS certificates
-  - Ingress TLS configuration with secrets
-  - Certificate lifecycle automation
+- [x] **Directory Structure**: Created `Security/TLSAndCertificates/` folder structure
+- [x] **TLS Configuration and Management**: `01-tls-configuration-management.md`
+  - Cluster TLS certificate management and examination using OpenSSL
+  - API server TLS configuration inspection and validation
+  - kubeadm certificate lifecycle management and expiration monitoring
+  - Certificate rotation procedures with backup and recovery
+  - TLS troubleshooting and debugging techniques
+  - Environment: Killercoda Ubuntu Playground with kubeadm cluster
+- [x] **Secret Management for TLS**: `02-secret-management-tls.md`
+  - TLS Secret creation methods (kubectl, files, YAML manifests)
+  - Certificate consumption patterns (volume mounts, environment variables)
+  - Secret rotation with zero-downtime rolling deployments
+  - Ingress TLS termination with Traefik integration
+  - Certificate lifecycle automation using Jobs and CronJobs
   - Environment: k3s bare metal
 
 ### Security/ControlPlane 
