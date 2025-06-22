@@ -289,13 +289,13 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Encryption key rotation workflow with zero-downtime procedures
   - Direct etcd access for encryption validation and troubleshooting
   - Environment: Killercoda Ubuntu Playground with kubeadm cluster
-- [ ] **API Server Security Configuration**: `02-api-server-security-configuration.md`
-  - API server secure configuration parameters
-  - Authentication and authorization configuration
-  - Admission controller configuration and custom policies
-  - Audit logging configuration and policy management
-  - API server TLS and certificate management
-  - Environment: Killercoda kubeadm cluster
+- [x] **API Server Security Configuration**: `02-api-server-security-configuration.md`
+  - Multi-layered authentication methods (certificates, tokens) and security parameters
+  - RBAC authorization hardening with least-privilege access patterns
+  - Security-focused admission controllers (NodeRestriction, PodSecurity, ResourceQuota)
+  - Comprehensive audit logging with policy configuration for compliance
+  - TLS hardening, cipher suite configuration, and network security parameters
+  - Environment: Killercoda Ubuntu Playground with kubeadm cluster
 - [ ] **Control Plane Component Communication**: `03-control-plane-component-communication.md`
   - Component-to-component TLS communication
   - etcd client certificate authentication
