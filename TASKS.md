@@ -256,11 +256,11 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Default deny vs allow policy patterns
   - Multi-tier application with frontend, backend, and database layers
   - Environment: k3s bare metal with Calico CNI
-- [ ] **Advanced Network Isolation**: `02-advanced-network-isolation.md`
-  - Multi-tier application network segmentation
-  - Namespace-based network isolation
-  - External traffic control and internet access
-  - Network policy troubleshooting and debugging
+- [x] **Advanced Network Isolation**: `02-advanced-network-isolation.md`
+  - Multi-environment isolation (dev, staging, prod)
+  - Complex microservices communication patterns
+  - External API access control and security
+  - NetworkPolicy troubleshooting and debugging techniques
   - Environment: k3s bare metal with Calico CNI
 
 ### Security/TLSAndCertificates
