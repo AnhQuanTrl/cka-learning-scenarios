@@ -358,11 +358,175 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [ ] Volume types, access modes, and reclaim policies
 
 ### Troubleshooting (30%)
-- [ ] Pod and node troubleshooting
-- [ ] Application debugging
-- [ ] Cluster component issues
-- [ ] Network services and connectivity (enhanced focus in 2025)
-- [ ] Log analysis and monitoring
+**Critical Domain: Highest percentage of CKA exam content**
+
+#### Troubleshooting/ClusterComponents - API Server
+- [x] **API Server Configuration Failures**: `01-api-server-configuration-failures.md`
+  - Break: Change `--etcd-servers` to `--etcd-server` in kube-apiserver manifest
+  - Break: Use wrong etcd endpoints or invalid URLs
+  - Break: Modify service account key file path to non-existent location
+  - Break: Change API server bind address to invalid IP
+  - Symptoms: API server crash loops, kubectl commands fail, cluster inaccessible
+  - Recovery: Static pod manifest troubleshooting and configuration validation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **API Server Certificate and TLS Issues**: `02-api-server-certificate-tls-issues.md`
+  - Break: Replace API server certificate with expired or invalid cert
+  - Break: Modify certificate file paths in kube-apiserver manifest
+  - Break: Change TLS cipher suites to incompatible values
+  - Break: Modify client CA file path or use wrong CA bundle
+  - Symptoms: TLS handshake failures, certificate validation errors, kubectl auth issues
+  - Recovery: Certificate validation, regeneration, and path correction
+  - Environment: Killercoda kubeadm cluster
+- [ ] **API Server Storage and Encryption Issues**: `03-api-server-storage-encryption-issues.md`
+  - Break: Configure invalid encryption provider in EncryptionConfiguration
+  - Break: Use non-existent encryption key file path
+  - Break: Modify audit log path to read-only location
+  - Break: Configure invalid admission controllers
+  - Symptoms: API server startup failures, resource creation errors, encryption failures
+  - Recovery: Configuration validation and encryption troubleshooting
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - etcd
+- [ ] **etcd Service and Connectivity Issues**: `01-etcd-service-connectivity-issues.md`
+  - Break: Stop etcd service using systemctl
+  - Break: Modify etcd data directory to non-existent path
+  - Break: Change etcd listen addresses to invalid IPs
+  - Break: Modify etcd cluster member URLs incorrectly
+  - Symptoms: API server cannot connect to etcd, cluster operations fail
+  - Recovery: etcd service restoration and configuration validation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **etcd Certificate and Authentication Issues**: `02-etcd-certificate-authentication-issues.md`
+  - Break: Replace etcd server certificate with invalid cert
+  - Break: Modify etcd client certificate paths in API server config
+  - Break: Change etcd peer certificate configuration
+  - Break: Use wrong CA bundle for etcd client authentication
+  - Symptoms: TLS handshake failures, authentication errors, cluster communication breakdown
+  - Recovery: Certificate troubleshooting and etcd client configuration
+  - Environment: Killercoda kubeadm cluster
+- [ ] **etcd Data Corruption and Recovery**: `03-etcd-data-corruption-recovery.md`
+  - Break: Simulate disk full scenario for etcd data directory
+  - Break: Manually corrupt etcd database files
+  - Break: Delete etcd member from cluster configuration
+  - Break: Modify etcd cluster token causing member mismatch
+  - Symptoms: Data inconsistency, cluster split-brain, member join failures
+  - Recovery: etcd backup restoration and cluster rebuild procedures
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - Controller Manager
+- [ ] **Controller Manager Configuration Issues**: `01-controller-manager-configuration-issues.md`
+  - Break: Modify kubeconfig path to non-existent file
+  - Break: Change service account private key file path
+  - Break: Configure invalid cluster signing certificate paths
+  - Break: Modify root CA file path incorrectly
+  - Symptoms: Controllers not reconciling, certificate signing requests failing, service accounts not working
+  - Recovery: Configuration validation and certificate path correction
+  - Environment: Killercoda kubeadm cluster
+- [ ] **Controller Manager Authentication and Authorization**: `02-controller-manager-auth-issues.md`
+  - Break: Use expired certificate in controller manager kubeconfig
+  - Break: Modify controller manager service account permissions
+  - Break: Change cluster role bindings for system:kube-controller-manager
+  - Break: Configure invalid authentication credentials
+  - Symptoms: RBAC permission errors, controller reconciliation failures, authentication failures
+  - Recovery: Certificate renewal and RBAC troubleshooting
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - Scheduler
+- [ ] **Scheduler Configuration and Policy Issues**: `01-scheduler-configuration-policy-issues.md`
+  - Break: Modify scheduler kubeconfig path to invalid location
+  - Break: Configure invalid scheduler policy file
+  - Break: Change scheduler bind address to unreachable IP
+  - Break: Modify leader election configuration incorrectly
+  - Symptoms: Pods stuck in Pending state, scheduling decisions not made, multiple scheduler instances
+  - Recovery: Scheduler configuration validation and policy troubleshooting
+  - Environment: Killercoda kubeadm cluster
+- [ ] **Scheduler Authentication and Performance Issues**: `02-scheduler-auth-performance-issues.md`
+  - Break: Use invalid certificate in scheduler kubeconfig
+  - Break: Configure scheduler with insufficient RBAC permissions
+  - Break: Modify scheduler resource limits causing OOM
+  - Break: Configure invalid metrics bind address
+  - Symptoms: Authentication failures, scheduling delays, scheduler crashes, performance degradation
+  - Recovery: Authentication troubleshooting and resource optimization
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - kubelet
+- [ ] **kubelet Service and Configuration Issues**: `01-kubelet-service-configuration-issues.md`
+  - Break: Stop kubelet service on worker nodes
+  - Break: Modify kubelet kubeconfig to use wrong cluster endpoint
+  - Break: Change kubelet configuration file path to non-existent location
+  - Break: Configure invalid container runtime endpoint
+  - Symptoms: Node NotReady status, pods not starting, container runtime errors
+  - Recovery: kubelet service restoration and configuration validation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **kubelet Certificate and Network Issues**: `02-kubelet-certificate-network-issues.md`
+  - Break: Use expired certificate in kubelet kubeconfig
+  - Break: Modify kubelet client certificate paths
+  - Break: Configure wrong cluster DNS in kubelet config
+  - Break: Change kubelet network plugin configuration
+  - Symptoms: Node authentication failures, DNS resolution issues, network connectivity problems
+  - Recovery: Certificate troubleshooting and network configuration validation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **kubelet Resource and Container Runtime Issues**: `03-kubelet-resource-container-runtime-issues.md`
+  - Break: Configure invalid container runtime socket path
+  - Break: Modify kubelet resource limits causing conflicts
+  - Break: Change container log path to read-only location
+  - Break: Configure invalid cgroup driver settings
+  - Symptoms: Container runtime errors, resource allocation failures, logging issues
+  - Recovery: Container runtime troubleshooting and resource configuration
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - kube-proxy
+- [ ] **kube-proxy Service and Network Configuration**: `01-kube-proxy-service-network-config.md`
+  - Break: Stop kube-proxy DaemonSet or service
+  - Break: Modify kube-proxy kubeconfig with wrong cluster endpoint
+  - Break: Configure invalid cluster CIDR in kube-proxy config
+  - Break: Change kube-proxy mode to unsupported option
+  - Symptoms: Service connectivity failures, load balancing issues, network routing problems
+  - Recovery: kube-proxy service restoration and network configuration validation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **kube-proxy iptables and Performance Issues**: `02-kube-proxy-iptables-performance-issues.md`
+  - Break: Manually corrupt iptables rules managed by kube-proxy
+  - Break: Configure kube-proxy with insufficient system resources
+  - Break: Modify kube-proxy authentication credentials
+  - Break: Change kube-proxy metrics bind address to conflicting port
+  - Symptoms: iptables rule inconsistencies, performance degradation, authentication failures
+  - Recovery: iptables troubleshooting and performance optimization
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - Network Components
+- [ ] **CNI Plugin Configuration and Installation Issues**: `01-cni-plugin-configuration-issues.md`
+  - Break: Remove or corrupt CNI plugin binaries
+  - Break: Modify CNI configuration files with invalid JSON
+  - Break: Configure conflicting network CIDR ranges
+  - Break: Remove CNI configuration directory permissions
+  - Symptoms: Pod networking failures, IP allocation issues, container creation errors
+  - Recovery: CNI plugin installation and configuration troubleshooting
+  - Environment: Killercoda kubeadm cluster
+- [ ] **CoreDNS and Service Discovery Issues**: `02-coredns-service-discovery-issues.md`
+  - Break: Modify CoreDNS ConfigMap with invalid configuration
+  - Break: Change CoreDNS service IP to conflicting address
+  - Break: Configure CoreDNS with insufficient resources causing OOM
+  - Break: Modify CoreDNS upstream servers to unreachable addresses
+  - Symptoms: DNS resolution failures, service discovery issues, DNS query timeouts
+  - Recovery: CoreDNS configuration validation and service discovery troubleshooting
+  - Environment: Killercoda kubeadm cluster
+
+#### Troubleshooting/ClusterComponents - Multi-Component Failures
+- [ ] **Cascading Component Failures**: `01-cascading-component-failures.md`
+  - Break multiple components simultaneously to simulate real disaster scenarios
+  - Break: etcd + API server certificate issues
+  - Break: Controller manager + Scheduler authentication problems
+  - Break: kubelet + kube-proxy network configuration issues
+  - Symptoms: Complete cluster dysfunction, complex interdependent failures
+  - Recovery: Systematic troubleshooting methodology and component isolation
+  - Environment: Killercoda kubeadm cluster
+- [ ] **Resource Exhaustion and Cluster Degradation**: `02-resource-exhaustion-cluster-degradation.md`
+  - Break: Simulate disk full on etcd and control plane nodes
+  - Break: Memory exhaustion on control plane components
+  - Break: Network bandwidth saturation and connectivity issues
+  - Break: Certificate expiration across multiple components
+  - Symptoms: Cluster performance degradation, partial functionality loss, resource conflicts
+  - Recovery: Resource management and cluster health restoration
+  - Environment: Killercoda kubeadm cluster
 
 ## Notes for Scenario Creation
 - **Environment**: Primary focus on k3s bare metal, with Digital Ocean scenarios for cloud-specific features
