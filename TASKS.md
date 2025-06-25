@@ -400,7 +400,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: Killercoda kubeadm cluster
 
 ### Troubleshooting/ClusterComponents - Scheduler
-- [ ] **Scheduler Configuration and Policy Issues**: `01-scheduler-configuration-policy-issues.md`
+- [x] **Scheduler Configuration and Policy Issues**: `01-scheduler-configuration-policy-issues.md`
   - Break: Modify scheduler kubeconfig path to invalid location
   - Break: Configure invalid scheduler policy file
   - Break: Change scheduler bind address to unreachable IP

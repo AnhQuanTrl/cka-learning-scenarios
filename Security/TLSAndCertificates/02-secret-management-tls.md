@@ -79,8 +79,10 @@ Deploy applications that consume TLS secrets through different patterns includin
    - Expose service on port 8443 with HTTPS configuration
    - Verify TLS certificate is loaded correctly
 
-3. **Configure ingress with TLS termination**:
-   - Create ingress resource for **admin-dashboard** deployment
+3. **Deploy admin dashboard and configure ingress with TLS termination**:
+   - Create **admin-dashboard** deployment using **nginx:1.21** image
+   - Create service to expose the admin dashboard on port 80
+   - Create ingress resource for the **admin-dashboard** service
    - Configure TLS termination using **admin-tls** secret
    - Set up hostname routing for **admin.securelab.svc.cluster.local**
    - Verify Traefik picks up TLS configuration
