@@ -382,7 +382,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: Killercoda kubeadm cluster
 
 ### Troubleshooting/ClusterComponents - Controller Manager
-- [ ] **Controller Manager Configuration Issues**: `01-controller-manager-configuration-issues.md`
+- [x] **Controller Manager Configuration Issues**: `01-controller-manager-configuration-issues.md`
   - Break: Modify kubeconfig path to non-existent file
   - Break: Change service account private key file path
   - Break: Configure invalid cluster signing certificate paths
@@ -390,7 +390,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: Controllers not reconciling, certificate signing requests failing, service accounts not working
   - Recovery: Configuration validation and certificate path correction
   - Environment: Killercoda kubeadm cluster
-- [ ] **Controller Manager Authentication and Authorization**: `02-controller-manager-auth-issues.md`
+- [x] **Controller Manager Authentication and Authorization**: `02-controller-manager-auth-issues.md`
   - Break: Use expired certificate in controller manager kubeconfig
   - Break: Modify controller manager service account permissions
   - Break: Change cluster role bindings for system:kube-controller-manager
