@@ -356,7 +356,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: Killercoda kubeadm cluster
 
 ### Troubleshooting/ClusterComponents - etcd
-- [ ] **etcd Service and Connectivity Issues**: `01-etcd-service-connectivity-issues.md`
+- [x] **etcd Service and Connectivity Issues**: `01-etcd-service-connectivity-issues.md`
   - Break: Stop etcd service using systemctl
   - Break: Modify etcd data directory to non-existent path
   - Break: Change etcd listen addresses to invalid IPs
@@ -364,7 +364,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: API server cannot connect to etcd, cluster operations fail
   - Recovery: etcd service restoration and configuration validation
   - Environment: Killercoda kubeadm cluster
-- [ ] **etcd Certificate and Authentication Issues**: `02-etcd-certificate-authentication-issues.md`
+- [x] **etcd Certificate and Authentication Issues**: `02-etcd-certificate-authentication-issues.md`
   - Break: Replace etcd server certificate with invalid cert
   - Break: Modify etcd client certificate paths in API server config
   - Break: Change etcd peer certificate configuration
@@ -372,7 +372,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: TLS handshake failures, authentication errors, cluster communication breakdown
   - Recovery: Certificate troubleshooting and etcd client configuration
   - Environment: Killercoda kubeadm cluster
-- [ ] **etcd Data Corruption and Recovery**: `03-etcd-data-corruption-recovery.md`
+- [x] **etcd Data Corruption and Recovery**: `03-etcd-data-corruption-recovery.md`
   - Break: Simulate disk full scenario for etcd data directory
   - Break: Manually corrupt etcd database files
   - Break: Delete etcd member from cluster configuration
@@ -399,7 +399,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: Certificate renewal and RBAC troubleshooting
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - Scheduler
+### Troubleshooting/ClusterComponents - Scheduler
 - [ ] **Scheduler Configuration and Policy Issues**: `01-scheduler-configuration-policy-issues.md`
   - Break: Modify scheduler kubeconfig path to invalid location
   - Break: Configure invalid scheduler policy file
