@@ -296,29 +296,13 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Comprehensive audit logging with policy configuration for compliance
   - TLS hardening, cipher suite configuration, and network security parameters
   - Environment: Killercoda Ubuntu Playground with kubeadm cluster
-- [ ] **Control Plane Component Communication**: `03-control-plane-component-communication.md`
+- [x] **Control Plane Component Communication**: `03-control-plane-component-communication.md`
   - Component-to-component TLS communication
   - etcd client certificate authentication
   - Kubelet API server authentication and authorization
   - Control plane network security and firewall rules
   - Control plane backup and restore security considerations
   - Environment: Killercoda kubeadm cluster
-
-## Future Scenario Categories (Not Started)
-
-### Cluster Architecture, Installation & Configuration (25%)
-- [ ] RBAC and security contexts
-- [ ] Cluster upgrades
-- [ ] Node management
-- [ ] Helm and Kustomize for deployment management
-- [ ] Extension interfaces (CNI, CSI, CRI)
-
-### Services & Networking (20%)
-- [ ] Service types and endpoints
-- [ ] Ingress controllers and rules
-- [ ] Gateway API for Ingress traffic management (NEW in 2025)
-- [ ] Network policies
-- [ ] DNS and service discovery
 
 ### Services/DNS
 - [x] **Directory Structure**: Created `Services/DNS/` folder structure
@@ -329,14 +313,14 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Plugin configuration (errors, health, kubernetes, forward, cache)
   - CoreDNS scaling and resource management
   - Environment: k3s bare metal
-- [ ] **DNS Service Discovery and Resolution**: `02-dns-service-discovery-resolution.md`
+- [x] **DNS Service Discovery and Resolution**: `02-dns-service-discovery-resolution.md`
   - Service DNS naming conventions (my-svc.my-namespace.svc.cluster.local)
   - Cross-namespace service resolution patterns
   - Headless services and pod DNS records
   - DNS policies (Default, ClusterFirst, ClusterFirstWithHostNet, None)
   - Custom DNS configuration with dnsConfig
   - Environment: k3s bare metal
-- [ ] **DNS Troubleshooting and Debugging**: `03-dns-troubleshooting-debugging.md`
+- [x] **DNS Troubleshooting and Debugging**: `03-dns-troubleshooting-debugging.md`
   - DNS resolution failure diagnosis and repair
   - CoreDNS pod status and log analysis
   - nslookup and dig testing from pods
@@ -345,22 +329,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Common DNS issues (systemd-resolved conflicts, search domain limits)
   - Environment: k3s bare metal
 
-### Workloads & Scheduling (15%)
-- [ ] Pod scheduling and affinity rules
-- [ ] Resource limits and requests
-- [ ] DaemonSets and StatefulSets
-- [ ] Jobs and CronJobs
-
-### Storage (10%)
-- [x] StorageClass scenarios (6 scenarios completed)
-- [x] VolumeSnapshots scenarios (2 scenarios completed)
-- [ ] Dynamic volume provisioning (enhanced focus in 2025)
-- [ ] Volume types, access modes, and reclaim policies
-
-### Troubleshooting (30%)
-**Critical Domain: Highest percentage of CKA exam content**
-
-#### Troubleshooting/ClusterComponents - API Server
+### Troubleshooting/ClusterComponents - API Server
 - [x] **API Server Configuration Failures**: `01-api-server-configuration-failures.md`
   - Break: Change `--etcd-servers` to `--etcd-server` in kube-apiserver manifest
   - Break: Use wrong etcd endpoints or invalid URLs
@@ -369,7 +338,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: API server crash loops, kubectl commands fail, cluster inaccessible
   - Recovery: Static pod manifest troubleshooting and configuration validation
   - Environment: Killercoda kubeadm cluster
-- [ ] **API Server Certificate and TLS Issues**: `02-api-server-certificate-tls-issues.md`
+- [x] **API Server Certificate and TLS Issues**: `02-api-server-certificate-tls-issues.md`
   - Break: Replace API server certificate with expired or invalid cert
   - Break: Modify certificate file paths in kube-apiserver manifest
   - Break: Change TLS cipher suites to incompatible values
@@ -377,7 +346,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: TLS handshake failures, certificate validation errors, kubectl auth issues
   - Recovery: Certificate validation, regeneration, and path correction
   - Environment: Killercoda kubeadm cluster
-- [ ] **API Server Storage and Encryption Issues**: `03-api-server-storage-encryption-issues.md`
+- [x] **API Server Storage and Encryption Issues**: `03-api-server-storage-encryption-issues.md`
   - Break: Configure invalid encryption provider in EncryptionConfiguration
   - Break: Use non-existent encryption key file path
   - Break: Modify audit log path to read-only location
@@ -386,7 +355,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: Configuration validation and encryption troubleshooting
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - etcd
+### Troubleshooting/ClusterComponents - etcd
 - [ ] **etcd Service and Connectivity Issues**: `01-etcd-service-connectivity-issues.md`
   - Break: Stop etcd service using systemctl
   - Break: Modify etcd data directory to non-existent path
@@ -412,7 +381,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: etcd backup restoration and cluster rebuild procedures
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - Controller Manager
+### Troubleshooting/ClusterComponents - Controller Manager
 - [ ] **Controller Manager Configuration Issues**: `01-controller-manager-configuration-issues.md`
   - Break: Modify kubeconfig path to non-existent file
   - Break: Change service account private key file path
@@ -448,7 +417,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: Authentication troubleshooting and resource optimization
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - kubelet
+### Troubleshooting/ClusterComponents - kubelet
 - [ ] **kubelet Service and Configuration Issues**: `01-kubelet-service-configuration-issues.md`
   - Break: Stop kubelet service on worker nodes
   - Break: Modify kubelet kubeconfig to use wrong cluster endpoint
@@ -474,7 +443,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: Container runtime troubleshooting and resource configuration
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - kube-proxy
+### Troubleshooting/ClusterComponents - kube-proxy
 - [ ] **kube-proxy Service and Network Configuration**: `01-kube-proxy-service-network-config.md`
   - Break: Stop kube-proxy DaemonSet or service
   - Break: Modify kube-proxy kubeconfig with wrong cluster endpoint
@@ -492,7 +461,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: iptables troubleshooting and performance optimization
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - Network Components
+### Troubleshooting/ClusterComponents - Network Components
 - [ ] **CNI Plugin Configuration and Installation Issues**: `01-cni-plugin-configuration-issues.md`
   - Break: Remove or corrupt CNI plugin binaries
   - Break: Modify CNI configuration files with invalid JSON
@@ -510,7 +479,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Recovery: CoreDNS configuration validation and service discovery troubleshooting
   - Environment: Killercoda kubeadm cluster
 
-#### Troubleshooting/ClusterComponents - Multi-Component Failures
+### Troubleshooting/ClusterComponents - Multi-Component Failures
 - [ ] **Cascading Component Failures**: `01-cascading-component-failures.md`
   - Break multiple components simultaneously to simulate real disaster scenarios
   - Break: etcd + API server certificate issues
@@ -527,6 +496,39 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: Cluster performance degradation, partial functionality loss, resource conflicts
   - Recovery: Resource management and cluster health restoration
   - Environment: Killercoda kubeadm cluster
+
+## CKA Domain
+
+### Cluster Architecture, Installation & Configuration (25%)
+- [ ] RBAC and security contexts
+- [ ] Cluster upgrades
+- [ ] Node management
+- [ ] Helm and Kustomize for deployment management
+- [ ] Extension interfaces (CNI, CSI, CRI)
+
+### Services & Networking (20%)
+- [ ] Service types and endpoints
+- [ ] Ingress controllers and rules
+- [ ] Gateway API for Ingress traffic management (NEW in 2025)
+- [ ] Network policies
+- [ ] DNS and service discovery
+
+
+### Workloads & Scheduling (15%)
+- [ ] Pod scheduling and affinity rules
+- [ ] Resource limits and requests
+- [ ] DaemonSets and StatefulSets
+- [ ] Jobs and CronJobs
+
+### Storage (10%)
+- [ ] StorageClass scenarios (6 scenarios completed)
+- [ ] VolumeSnapshots scenarios (2 scenarios completed)
+- [ ] Dynamic volume provisioning (enhanced focus in 2025)
+- [ ] Volume types, access modes, and reclaim policies
+
+### Troubleshooting (30%)
+**Critical Domain: Highest percentage of CKA exam content**
+
 
 ## Notes for Scenario Creation
 - **Environment**: Primary focus on k3s bare metal, with Digital Ocean scenarios for cloud-specific features

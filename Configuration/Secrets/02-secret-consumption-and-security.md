@@ -34,7 +34,39 @@ First, create the secrets that will be consumed by the application pods in later
 
 ---
 
-### Task 2: Consume a Secret as Environment Variables
+### Task 2: Create TLS Secret using Kubernetes CSR API
+*(Time Suggestion: 12 minutes)*
+
+Create a TLS certificate using the Kubernetes Certificate Signing Request (CSR) API workflow, then create a TLS secret for secure communication.
+
+**Step 2a**: Create private key and certificate signing request.
+- Generate a private key for **web-service.default.svc.cluster.local**
+- Create a CSR file requesting a serving certificate with the following details:
+  - Common Name: **web-service.default.svc.cluster.local**
+  - Organization: **MyCompany**
+  - Subject Alternative Names: **web-service.default.svc.cluster.local**, **web-service**, **localhost**
+
+**Step 2b**: Create Kubernetes CSR object and approve it.
+- Create a Kubernetes CertificateSigningRequest object named **web-service-csr**
+- Set the signer to **kubernetes.io/kube-apiserver-client**
+- Configure key usages for **digital signature** and **key encipherment**
+- Approve the CSR using kubectl
+
+**Step 2c**: Sign the certificate using a custom self-signed CA.
+- Create a self-signed CA certificate and private key for **MyCompany Root CA**
+- Extract the CSR from the Kubernetes CSR object
+- Sign the certificate using the custom CA with 1-year validity
+- Upload the signed certificate to the CSR object using the raw Kubernetes API:
+  ```
+  /apis/certificates.k8s.io/v1/certificatesigningrequests/web-service-csr/status
+  ```
+
+**Step 2d**: Create TLS secret and CA ConfigMap.
+- Download the signed certificate from the CSR object
+- Create a TLS secret named **web-service-tls** with the signed certificate and private key
+- Create a ConfigMap named **ca-bundle** containing the self-signed CA certificate for client verification
+
+### Task 3: Consume a Secret as Environment Variables
 *(Time Suggestion: 5 minutes)*
 
 Create a Pod that consumes the `db-credentials` secret by injecting its keys as environment variables. This method is convenient but carries risks, as environment variables can be easily inspected.

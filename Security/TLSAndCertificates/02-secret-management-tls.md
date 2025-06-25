@@ -19,29 +19,45 @@ You're a DevOps engineer at SecureWeb Solutions, tasked with implementing secure
 
 ## Tasks
 
-### Task 1: TLS Certificate Generation and Secret Creation
-**Time: 10 minutes**
+### Task 1: TLS Certificate Generation using Kubernetes CSR API
+**Time: 15 minutes**
 
-Create self-signed TLS certificates and convert them into Kubernetes TLS secrets for different applications.
+Create TLS certificates using the Kubernetes Certificate Signing Request (CSR) API workflow and convert them into TLS secrets for different applications.
 
-1. **Generate certificates for web applications**:
-   - Create a self-signed CA certificate for **SecureWeb Solutions**
-   - Generate server certificates for domains:
-     - **app1.securelab.local** (web application)
-     - **api.securelab.local** (REST API service)
-     - **admin.securelab.local** (admin dashboard)
+1. **Create private keys and certificate signing requests**:
+   - Generate private keys for three applications:
+     - **app1.securelab.svc.cluster.local** (web application)
+     - **api.securelab.svc.cluster.local** (REST API service) 
+     - **admin.securelab.svc.cluster.local** (admin dashboard)
+   - Create CSR files for each domain with proper Subject Alternative Names
+   - Set Organization to **SecureWeb Solutions**
 
-2. **Create TLS secrets using different methods**:
-   - Create **app1-tls** secret using `kubectl create secret tls` command
-   - Create **api-tls** secret from certificate files using `--from-file`
-   - Create **admin-tls** secret using YAML manifest with base64-encoded data
+2. **Create and approve Kubernetes CSR objects**:
+   - Create CertificateSigningRequest objects: **app1-csr**, **api-csr**, **admin-csr**
+   - Configure proper key usages for **digital signature**, **key encipherment**, and **server auth**
+   - Set signer name to **securewebsolutions.com/serving** for custom CA signing
+   - Approve all CSRs using kubectl certificate approve commands
 
-3. **Verify secret creation and structure**:
+3. **Sign certificates using custom self-signed CA**:
+   - Create a self-signed CA certificate and private key for **SecureWeb Solutions**
+   - Extract CSR data from the Kubernetes CSR objects
+   - Sign each certificate using the custom CA with 1-year validity
+   - Upload signed certificates back to CSR objects using raw Kubernetes API:
+     `/apis/certificates.k8s.io/v1/certificatesigningrequests/{csr-name}/status`
+
+4. **Create TLS secrets using different methods**:
+   - Create **app1-tls** secret using `kubectl create secret tls` command with downloaded certificate
+   - Create **api-tls** secret from certificate files using `--from-file` method
+   - Create **admin-tls** secret using YAML manifest with base64-encoded certificate data
+   - Create **ca-bundle** ConfigMap containing the self-signed CA certificate for client verification
+
+5. **Verify secret creation and certificate validity**:
    - Examine secret data structure and certificate storage format
-   - Validate certificate content within secrets
-   - Check secret labels and annotations for organization
+   - Validate certificate content within secrets using openssl
+   - Check certificate chain against the custom CA
+   - Verify Subject Alternative Names and expiration dates
 
-**Hint**: Use `kubectl create secret generic` with `--from-file` for more control over certificate key names.
+**Hint**: Use `kubectl get csr <name> -o jsonpath='{.status.certificate}'` to retrieve signed certificates from CSR objects.
 
 ### Task 2: TLS Secret Consumption Patterns
 **Time: 12 minutes**
@@ -55,15 +71,18 @@ Deploy applications that consume TLS secrets through different patterns includin
    - Create custom nginx configuration through ConfigMap
 
 2. **Deploy API service with environment variable certificate paths**:
-   - Create **api-service** deployment using a simple web server
-   - Mount **api-tls** secret and reference paths via environment variables
+   - Create **api-service** deployment using **hashicorp/http-echo:latest** image
+   - Mount **api-tls** secret as volume at `/etc/certs/`
+   - Set environment variables for certificate paths:
+     - **TLS_CERT_PATH**: `/etc/certs/tls.crt`
+     - **TLS_KEY_PATH**: `/etc/certs/tls.key`
    - Expose service on port 8443 with HTTPS configuration
    - Verify TLS certificate is loaded correctly
 
 3. **Configure ingress with TLS termination**:
    - Create ingress resource for **admin-dashboard** deployment
    - Configure TLS termination using **admin-tls** secret
-   - Set up hostname routing for **admin.securelab.local**
+   - Set up hostname routing for **admin.securelab.svc.cluster.local**
    - Verify Traefik picks up TLS configuration
 
 **Hint**: Use `kubectl port-forward` to test HTTPS endpoints locally before ingress configuration.
@@ -74,7 +93,7 @@ Deploy applications that consume TLS secrets through different patterns includin
 Implement TLS certificate rotation procedures with zero-downtime deployment updates.
 
 1. **Generate new certificates with extended validity**:
-   - Create renewed certificates for **app1.securelab.local** with 2-year validity
+   - Create renewed certificates for **app1.securelab.svc.cluster.local** with 2-year validity
    - Generate certificates with additional Subject Alternative Names
    - Include both old and new certificates for transition period
 
