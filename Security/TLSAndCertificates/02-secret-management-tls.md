@@ -49,7 +49,7 @@ Create TLS certificates using the Kubernetes Certificate Signing Request (CSR) A
    - Create **app1-tls** secret using `kubectl create secret tls` command with downloaded certificate
    - Create **api-tls** secret from certificate files using `--from-file` method
    - Create **admin-tls** secret using YAML manifest with base64-encoded certificate data
-   - Create **ca-bundle** ConfigMap containing the self-signed CA certificate for client verification
+   - Create **securelab-serving-ca** ConfigMap containing the self-signed CA certificate for client verification
 
 5. **Verify secret creation and certificate validity**:
    - Examine secret data structure and certificate storage format
@@ -65,13 +65,13 @@ Create TLS certificates using the Kubernetes Certificate Signing Request (CSR) A
 Deploy applications that consume TLS secrets through different patterns including volume mounts and ingress integration.
 
 1. **Deploy web application with volume-mounted certificates**:
-   - Create **frontend-app** deployment using nginx image
+   - Create **app1** deployment using nginx image
    - Mount **app1-tls** secret as volume at `/etc/ssl/certs/`
    - Configure nginx to use mounted certificates for HTTPS
    - Create custom nginx configuration through ConfigMap
 
 2. **Deploy API service with environment variable certificate paths**:
-   - Create **api-service** deployment using **hashicorp/http-echo:latest** image
+   - Create **api** deployment using **hashicorp/http-echo:latest** image
    - Mount **api-tls** secret as volume at `/etc/certs/`
    - Set environment variables for certificate paths:
      - **TLS_CERT_PATH**: `/etc/certs/tls.crt`
@@ -80,11 +80,11 @@ Deploy applications that consume TLS secrets through different patterns includin
    - Verify TLS certificate is loaded correctly
 
 3. **Deploy admin dashboard and configure ingress with TLS termination**:
-   - Create **admin-dashboard** deployment using **nginx:1.21** image
+   - Create **admin** deployment using **nginx:1.21** image
    - Create service to expose the admin dashboard on port 80
-   - Create ingress resource for the **admin-dashboard** service
+   - Create ingress resource for the **admin** service
    - Configure TLS termination using **admin-tls** secret
-   - Set up hostname routing for **admin.securelab.svc.cluster.local**
+   - Set up hostname routing for **admin.securelab.local**
    - Verify Traefik picks up TLS configuration
 
 **Hint**: Use `kubectl port-forward` to test HTTPS endpoints locally before ingress configuration.
@@ -101,7 +101,7 @@ Implement TLS certificate rotation procedures with zero-downtime deployment upda
 
 2. **Perform secret rotation with rolling deployment**:
    - Update **app1-tls** secret with new certificate data
-   - Trigger rolling deployment of **frontend-app** to pick up new certificates
+   - Trigger rolling deployment of **app1** to pick up new certificates
    - Monitor deployment progress and verify zero downtime
    - Validate new certificate is active in the application
 
@@ -159,19 +159,48 @@ kubectl get secret app1-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl
 ```bash
 # Check application deployments
 kubectl get deployments -o wide
-kubectl get pods -l app=frontend-app
+kubectl get pods -l app=app1
 
 # Verify certificate mounting
-kubectl exec deployment/frontend-app -- ls -la /etc/ssl/certs/
-kubectl exec deployment/frontend-app -- openssl x509 -in /etc/ssl/certs/tls.crt -subject -noout
+kubectl exec deployment/app1 -- ls -la /etc/ssl/certs/
+kubectl exec deployment/app1 -- openssl x509 -in /etc/ssl/certs/tls.crt -subject -noout
 
-# Test HTTPS endpoints
-kubectl port-forward service/frontend-app 8443:443 &
-curl -k https://localhost:8443 -v
+# Test HTTPS endpoints with proper certificate validation
+kubectl run test-client -n securelab --image=curlimages/curl:latest --rm --restart=Never \
+  --overrides='
+{
+  "spec": {
+    "containers": [
+      {
+        "name": "test-client",
+        "image": :latest",
+        "command": ["sleep", "3600"],
+        "volumeMounts": [
+          {
+            "name": "ca-bundle",
+            "mountPath": "/etc/ssl/ca-bundle"
+          }
+        ]
+      }
+    ],
+    "volumes": [
+      {
+        "name": "ca-bundle",
+        "configMap": {
+          "name": "securelab-serving-ca",
+          "defaultMode": 420
+        }
+      }
+    ]
+  }
+}'
+
+# Inside the test-client pod, test TLS connection with CA validation:
+curl --cacert /etc/ssl/ca-bundle/ca.crt https://app1.securelab.svc.cluster.local:443 -v
 
 # Check ingress configuration
-kubectl get ingress admin-dashboard -o yaml
-kubectl describe ingress admin-dashboard
+kubectl get ingress admin -o yaml
+kubectl describe ingress admin
 ```
 
 **Expected Output**: Applications should be running with properly mounted certificates, HTTPS endpoints should respond with valid TLS handshakes.
@@ -182,15 +211,15 @@ kubectl describe ingress admin-dashboard
 kubectl get secret app1-tls -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -serial -noout
 
 # Check deployment rollout status
-kubectl rollout status deployment/frontend-app
-kubectl rollout history deployment/frontend-app
+kubectl rollout status deployment/app1
+kubectl rollout history deployment/app1
 
 # Verify new certificate validity period
 kubectl get secret app1-tls-v2 -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -dates -noout
 
 # Test rollback functionality
-kubectl rollout undo deployment/frontend-app
-kubectl rollout status deployment/frontend-app
+kubectl rollout undo deployment/app1
+kubectl rollout status deployment/app1
 ```
 
 **Expected Output**: Certificate serial numbers should change after rotation, deployments should complete rollout successfully with new certificates.
@@ -206,7 +235,7 @@ kubectl get cronjobs cert-renewal
 kubectl describe cronjob cert-renewal
 
 # Test certificate validation logic
-kubectl logs -l app=frontend-app -c cert-validator --previous
+kubectl logs -l app=app1 -c cert-validator --previous
 kubectl get configmap cert-monitoring-results -o yaml
 ```
 

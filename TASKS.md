@@ -185,6 +185,22 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Kubeconfig troubleshooting and validation
   - Environment: k3s and minikube
 
+### Configuration/Kustomize
+- [x] **Kustomize Bases and Overlays**: `01-kustomize-bases-and-overlays.md`
+  - Kustomize structure with bases and environment-specific overlays
+  - Patch strategies using strategic merge and JSON patches
+  - ConfigMap generation with literals and files
+  - Resource transformations (labels, annotations, prefixes, namespaces)
+  - Multi-environment deployment patterns (dev, staging, production)
+  - Environment: k3s bare metal
+- [x] **Kustomize Components and Advanced Transformations**: `02-kustomize-components-and-transformations.md`
+  - Reusable component creation with kind: Component
+  - Modular configuration packages for multi-tenant SaaS platform
+  - Selective feature enablement (external database, LDAP, monitoring, premium features)
+  - Advanced transformations and multi-base compositions
+  - Component patches and resource generation patterns
+  - Environment: k3s bare metal
+
 ### Security/Authentication
 - [x] **Directory Structure**: Create `Security/Authentication/` folder structure
 - [x] **Service Account Authentication**: `01-service-account-authentication.md`
@@ -503,7 +519,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
 - [ ] RBAC and security contexts
 - [ ] Cluster upgrades
 - [ ] Node management
-- [ ] Helm and Kustomize for deployment management
+- [x] Helm and Kustomize for deployment management (2 Kustomize scenarios completed)
 - [ ] Extension interfaces (CNI, CSI, CRI)
 
 ### Services & Networking (20%)
