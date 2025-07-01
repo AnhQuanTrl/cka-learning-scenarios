@@ -424,7 +424,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: Pods stuck in Pending state, scheduling decisions not made, multiple scheduler instances
   - Recovery: Scheduler configuration validation and policy troubleshooting
   - Environment: Killercoda kubeadm cluster
-- [ ] **Scheduler Authentication and Performance Issues**: `02-scheduler-auth-performance-issues.md`
+- [x] **Scheduler Authentication and Performance Issues**: `02-scheduler-auth-performance-issues.md`
   - Break: Use invalid certificate in scheduler kubeconfig
   - Break: Configure scheduler with insufficient RBAC permissions
   - Break: Modify scheduler resource limits causing OOM
@@ -434,7 +434,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Environment: Killercoda kubeadm cluster
 
 ### Troubleshooting/ClusterComponents - kubelet
-- [ ] **kubelet Service and Configuration Issues**: `01-kubelet-service-configuration-issues.md`
+- [x] **kubelet Service and Configuration Issues**: `01-kubelet-service-configuration-issues.md`
   - Break: Stop kubelet service on worker nodes
   - Break: Modify kubelet kubeconfig to use wrong cluster endpoint
   - Break: Change kubelet configuration file path to non-existent location
@@ -442,7 +442,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: Node NotReady status, pods not starting, container runtime errors
   - Recovery: kubelet service restoration and configuration validation
   - Environment: Killercoda kubeadm cluster
-- [ ] **kubelet Certificate and Network Issues**: `02-kubelet-certificate-network-issues.md`
+- [x] **kubelet Certificate and Network Issues**: `02-kubelet-certificate-network-issues.md`
   - Break: Use expired certificate in kubelet kubeconfig
   - Break: Modify kubelet client certificate paths
   - Break: Configure wrong cluster DNS in kubelet config
@@ -450,7 +450,7 @@ This document tracks the progress of creating CKA exam preparation scenarios bas
   - Symptoms: Node authentication failures, DNS resolution issues, network connectivity problems
   - Recovery: Certificate troubleshooting and network configuration validation
   - Environment: Killercoda kubeadm cluster
-- [ ] **kubelet Resource and Container Runtime Issues**: `03-kubelet-resource-container-runtime-issues.md`
+- [x] **kubelet Resource and Container Runtime Issues**: `03-kubelet-resource-container-runtime-issues.md`
   - Break: Configure invalid container runtime socket path
   - Break: Modify kubelet resource limits causing conflicts
   - Break: Change container log path to read-only location
